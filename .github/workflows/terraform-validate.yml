@@ -1,4 +1,3 @@
-```yaml
 name: Terraform Validation
 
 on:
@@ -52,4 +51,3 @@ jobs:
           directory: infrastructure/modules/network
           framework: terraform
           quiet: true
-```
