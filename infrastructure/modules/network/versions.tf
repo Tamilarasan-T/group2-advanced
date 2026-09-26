@@ -1,4 +1,3 @@
-id="5nq2br"
 terraform {
   required_version = ">= 1.6.0"
 
