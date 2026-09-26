@@ -1,0 +1,91 @@
+mermaid
+flowchart TB
+
+    U["Application Teams"]
+
+    U --> RT["Repository Template"]
+
+    RT --> APP["Application Code"]
+    RT --> TEST["Automated Tests"]
+    RT --> DOC["Documentation"]
+    RT --> ADR["Engineering Decisions"]
+
+    APP --> PR["Pull Request"]
+
+    PR --> CI["Reusable CI"]
+    PR --> SEC["Reusable Security"]
+    PR --> GOV["Governance"]
+
+    CI --> TEST
+    SEC --> GL["Gitleaks"]
+    SEC --> TR["Trivy"]
+    GOV --> BP["Branch Protection"]
+    GOV --> CO["CODEOWNERS"]
+
+    PR --> TF["Reusable Terraform"]
+
+    TF --> TV["Terraform Validation"]
+    TV --> CK["Checkov"]
+
+    TF --> TM["Terraform Platform Modules"]
+
+    TM --> NET["Network Module"]
+    TM --> IAM["IAM Module"]
+    TM --> CON["Container Module"]
+    TM --> OBS["Observability Module"]
+
+    NET --> AWS["AWS Platform"]
+    IAM --> AWS
+    CON --> ECR["Amazon ECR"]
+    OBS --> CW["CloudWatch"]
+
+    ECR --> AWS
+    CW --> AWS
+
+    AWS --> MON["Monitoring & Operations"]
+
+    GOV --> EX["Exception Process"]
+    EX --> REM["Remediation"]
+
+    REM --> GOV
+```
+
+### What the diagram shows
+
+```text
+Application Teams
+       ↓
+Repository Template
+       ↓
+Pull Request
+       ↓
+ ┌─────┼──────────┐
+ ↓     ↓          ↓
+ CI   Security  Governance
+       ↓
+    Gitleaks
+    Trivy
+       ↓
+ Reusable Terraform
+       ↓
+ Terraform Modules
+ ┌────┼────┬────┐
+ ↓    ↓    ↓    ↓
+Net  IAM  ECR  Logs
+             ↓
+          AWS Platform
+```
+
+This diagram is intentionally aligned with the implementation you've actually completed:
+
+* Repository template ✅
+* Reusable CI ✅
+* Reusable Security ✅
+* Reusable Terraform ✅
+* Network module ✅
+* IAM module ✅
+* Container module ✅
+* Observability module ✅
+* Governance ✅
+* Exception process ✅
+
