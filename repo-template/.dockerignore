@@ -1,0 +1,10 @@
+.git
+.github
+tests
+docs
+architecture
+ai-specifications
+engineering-decisions
+__pycache__
+*.pyc
+.pytest_cache
