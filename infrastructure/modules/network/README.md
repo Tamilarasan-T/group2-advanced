@@ -13,6 +13,9 @@ It provides:
 * Public route table
 * Private route tables
 * Multi-AZ subnet placement
+* Default security group restriction
+* VPC Flow Logs
+* CloudWatch Log Group for VPC Flow Logs
 * Standard resource tagging
 
 The module is designed to be reused across multiple applications and environments.
@@ -26,7 +29,7 @@ The module is designed to be reused across multiple applications and environment
                         |
               +---------+---------+
               |                   |
-          AZ-1                AZ-2
+            AZ-1                AZ-2
               |                   |
        +------+-----+       +-----+------+
        |            |       |            |
@@ -38,6 +41,13 @@ The module is designed to be reused across multiple applications and environment
                        VPC
                         |
                  Internet Gateway
+
+                        |
+                        v
+                 VPC Flow Logs
+                        |
+                        v
+               CloudWatch Log Group
 ```
 
 ---
@@ -68,6 +78,11 @@ module "network" {
 
   vpc_cidr = "10.0.0.0/16"
 
+  availability_zones = [
+    "ap-south-1a",
+    "ap-south-1b"
+  ]
+
   public_subnet_cidrs = [
     "10.0.1.0/24",
     "10.0.2.0/24"
@@ -78,53 +93,149 @@ module "network" {
     "10.0.12.0/24"
   ]
 
+  flow_log_retention_days = 30
+
   tags = {
-    Owner     = "Platform-Team"
+    Owner      = "Platform-Team"
     CostCenter = "Engineering"
   }
 }
 ```
 
+> The Availability Zones shown above are examples for the AWS Mumbai region (`ap-south-1`). The consuming environment should provide Availability Zones appropriate for its AWS region.
+
 ---
 
 ## Inputs
 
-| Name                   | Type           | Required | Description                  |
-| ---------------------- | -------------- | -------: | ---------------------------- |
-| `name`                 | `string`       |      Yes | Application or platform name |
-| `environment`          | `string`       |      Yes | `dev`, `test`, or `prod`     |
-| `vpc_cidr`             | `string`       |      Yes | VPC CIDR block               |
-| `public_subnet_cidrs`  | `list(string)` |      Yes | Public subnet CIDRs          |
-| `private_subnet_cidrs` | `list(string)` |      Yes | Private subnet CIDRs         |
-| `tags`                 | `map(string)`  |       No | Additional resource tags     |
+| Name                      | Type           | Required | Default | Description                                               |
+| ------------------------- | -------------- | -------: | ------- | --------------------------------------------------------- |
+| `name`                    | `string`       |      Yes | —       | Application or platform name                              |
+| `environment`             | `string`       |      Yes | —       | Deployment environment: `dev`, `test`, or `prod`          |
+| `vpc_cidr`                | `string`       |      Yes | —       | CIDR block for the VPC                                    |
+| `availability_zones`      | `list(string)` |      Yes | —       | Explicit AWS Availability Zones used for subnet placement |
+| `public_subnet_cidrs`     | `list(string)` |      Yes | —       | CIDR blocks for public subnets                            |
+| `private_subnet_cidrs`    | `list(string)` |      Yes | —       | CIDR blocks for private subnets                           |
+| `flow_log_retention_days` | `number`       |       No | `30`    | Number of days to retain VPC Flow Logs                    |
+| `tags`                    | `map(string)`  |       No | `{}`    | Additional resource tags                                  |
 
 ---
 
 ## Outputs
 
-| Name                      | Description             |
-| ------------------------- | ----------------------- |
-| `vpc_id`                  | VPC ID                  |
-| `vpc_cidr`                | VPC CIDR                |
-| `internet_gateway_id`     | Internet Gateway ID     |
-| `public_subnet_ids`       | Public subnet IDs       |
-| `private_subnet_ids`      | Private subnet IDs      |
-| `public_route_table_id`   | Public route table ID   |
-| `private_route_table_ids` | Private route table IDs |
-| `availability_zones`      | Availability zones used |
+| Name                      | Description                                   |
+| ------------------------- | --------------------------------------------- |
+| `vpc_id`                  | ID of the created VPC                         |
+| `vpc_cidr`                | CIDR block of the VPC                         |
+| `internet_gateway_id`     | ID of the Internet Gateway                    |
+| `public_subnet_ids`       | IDs of the public subnets                     |
+| `private_subnet_ids`      | IDs of the private subnets                    |
+| `public_route_table_id`   | ID of the public route table                  |
+| `private_route_table_ids` | IDs of the private route tables               |
+| `availability_zones`      | Availability Zones configured for the network |
+| `flow_log_group_name`     | CloudWatch Log Group receiving VPC Flow Logs  |
+
+---
+
+## Network Design
+
+The module creates:
+
+### VPC
+
+A configurable VPC CIDR is provided through:
+
+```hcl
+vpc_cidr = "10.0.0.0/16"
+```
+
+DNS support and DNS hostnames are enabled.
+
+### Public Subnets
+
+Public subnets are created across the explicitly provided Availability Zones.
+
+Example:
+
+```text
+10.0.1.0/24
+10.0.2.0/24
+```
+
+The public route table provides Internet Gateway routing.
+
+### Private Subnets
+
+Private subnets are created across multiple Availability Zones.
+
+Example:
+
+```text
+10.0.11.0/24
+10.0.12.0/24
+```
+
+Private subnets do not receive public IP addresses automatically.
+
+---
+
+## Availability Zone Strategy
+
+Availability Zones are provided explicitly by the consuming environment.
+
+Example:
+
+```hcl
+availability_zones = [
+  "ap-south-1a",
+  "ap-south-1b"
+]
+```
+
+This prevents the module from dynamically expanding its Availability Zone selection when AWS adds new Availability Zones.
+
+The number of Availability Zones must be sufficient for the configured public and private subnet CIDRs.
 
 ---
 
 ## Security Standards
 
-This module follows the platform security requirements.
+This module follows the platform security requirements defined in the AI Engineering Specifications.
 
-### Network security
+### Default Security Group
 
-* Private subnets do not receive public IP addresses automatically.
-* Administrative ports are not exposed by this module.
-* Security groups are intentionally managed separately by consuming applications or dedicated modules.
-* Network resources are deployed across multiple Availability Zones.
+The VPC default security group is explicitly restricted.
+
+It does not allow unrestricted:
+
+```text
+Ingress
+Egress
+```
+
+Application-specific security groups should be created separately according to application requirements.
+
+### VPC Flow Logs
+
+VPC Flow Logs are enabled for:
+
+```text
+ALL traffic
+```
+
+Logs are delivered to a dedicated CloudWatch Log Group.
+
+Default retention:
+
+```text
+30 days
+```
+
+The retention period can be customized:
+
+```hcl
+flow_log_retention_days = 30
+```
 
 ### Credentials
 
@@ -133,10 +244,53 @@ The module does not contain:
 * AWS access keys
 * AWS secret keys
 * Passwords
-* Tokens
+* API tokens
 * Hardcoded credentials
 
-AWS authentication must be provided through the deployment environment.
+AWS authentication must be provided by the deployment environment.
+
+---
+
+## CloudWatch Logging
+
+VPC Flow Logs are sent to a dedicated CloudWatch Log Group.
+
+Example:
+
+```text
+/aws/vpc/flow-logs/ims-dev
+```
+
+The log group retention is configurable through:
+
+```hcl
+flow_log_retention_days = 30
+```
+
+This provides network-level visibility for troubleshooting and security investigations.
+
+---
+
+## Resource Tagging
+
+The module applies standard platform tags:
+
+```text
+Application
+Environment
+ManagedBy
+```
+
+Additional tags can be supplied by the consuming application.
+
+Example:
+
+```hcl
+tags = {
+  Owner      = "Platform-Team"
+  CostCenter = "Engineering"
+}
+```
 
 ---
 
@@ -152,7 +306,7 @@ prod
 
 Environment-specific configuration should be maintained outside the reusable module.
 
-Example:
+Recommended structure:
 
 ```text
 infrastructure/
@@ -165,22 +319,61 @@ infrastructure/
     └── prod/
 ```
 
+The reusable module should contain infrastructure logic, while environment directories provide environment-specific inputs.
+
 ---
 
 ## Validation
 
-Run the following commands from the module or consuming Terraform configuration:
+Run Terraform formatting validation:
 
 ```bash
 terraform fmt -check -recursive
-terraform init
+```
+
+Initialize Terraform without configuring a backend:
+
+```bash
+terraform init -backend=false
+```
+
+Validate the Terraform configuration:
+
+```bash
 terraform validate
 ```
 
-Security validation:
+Run security validation:
 
 ```bash
-checkov -d .
+checkov -d infrastructure/modules/network --framework terraform
+```
+
+---
+
+## CI/CD Validation
+
+The module is validated automatically through GitHub Actions.
+
+The validation workflow performs:
+
+```text
+Terraform Format Check
+        |
+        v
+Terraform Init
+        |
+        v
+Terraform Validate
+        |
+        v
+Checkov Security Scan
+```
+
+The workflow is located at:
+
+```text
+.github/workflows/terraform-validate.yml
 ```
 
 ---
@@ -189,23 +382,95 @@ checkov -d .
 
 The module is intentionally application-independent.
 
-The same module can be consumed by multiple applications:
+Multiple applications can consume the same module:
 
 ```text
 Application A
-     |
-     +----> Network Module v1
+      |
+      +----> Network Module
+      |
+      v
+   AWS VPC
+
 
 Application B
-     |
-     +----> Network Module v1
-
-Application C
-     |
-     +----> Network Module v1
+      |
+      +----> Network Module
+      |
+      v
+   AWS VPC
 ```
 
-This avoids duplicating VPC and subnet Terraform configurations across application repositories.
+This eliminates duplicated VPC and subnet Terraform configurations.
+
+---
+
+## Example Multi-Environment Usage
+
+### Development
+
+```hcl
+module "network" {
+  source = "../../modules/network"
+
+  name        = "ims"
+  environment = "dev"
+
+  vpc_cidr = "10.0.0.0/16"
+
+  availability_zones = [
+    "ap-south-1a",
+    "ap-south-1b"
+  ]
+
+  public_subnet_cidrs = [
+    "10.0.1.0/24",
+    "10.0.2.0/24"
+  ]
+
+  private_subnet_cidrs = [
+    "10.0.11.0/24",
+    "10.0.12.0/24"
+  ]
+}
+```
+
+### Production
+
+A production environment can consume the same module with different inputs:
+
+```hcl
+module "network" {
+  source = "../../modules/network"
+
+  name        = "ims"
+  environment = "prod"
+
+  vpc_cidr = "10.10.0.0/16"
+
+  availability_zones = [
+    "ap-south-1a",
+    "ap-south-1b",
+    "ap-south-1c"
+  ]
+
+  public_subnet_cidrs = [
+    "10.10.1.0/24",
+    "10.10.2.0/24",
+    "10.10.3.0/24"
+  ]
+
+  private_subnet_cidrs = [
+    "10.10.11.0/24",
+    "10.10.12.0/24",
+    "10.10.13.0/24"
+  ]
+
+  flow_log_retention_days = 90
+}
+```
+
+The same reusable module can therefore support different environments without duplicating the underlying infrastructure implementation.
 
 ---
 
@@ -215,14 +480,16 @@ The module follows these principles:
 
 1. Reusable
 2. Environment-aware
-3. Multi-AZ by default
+3. Multi-AZ capable
 4. Secure by default
 5. Application-independent
-6. Minimal required inputs
+6. Explicit Availability Zone selection
 7. Standardized tagging
-8. Version controlled
+8. Network observability
 9. Infrastructure as Code
-10. Compatible with automated validation
+10. Automated security validation
+11. Version controlled
+12. Minimal application-specific logic
 
 ---
 
@@ -231,28 +498,55 @@ The module follows these principles:
 This module intentionally does not create:
 
 * NAT Gateways
-* Security Groups
+* Application-specific Security Groups
 * Network ACL customization
-* VPC endpoints
+* VPC Endpoints
 * VPN connections
 * Transit Gateway attachments
+* Load Balancers
 
-These capabilities can be introduced through dedicated modules when required.
+These capabilities can be introduced through dedicated reusable modules when required.
+
+---
+
+## Security Validation
+
+The module is expected to pass the platform security checks, including:
+
+```text
+CKV_AWS_394
+CKV2_AWS_12
+CKV2_AWS_11
+```
+
+These checks ensure:
+
+* Availability Zones are explicitly defined.
+* The default VPC security group is restricted.
+* VPC Flow Logs are enabled.
+
+Additional Checkov policies may be introduced as platform security requirements evolve.
 
 ---
 
 ## Definition of Done
 
-The network module is complete when:
+The Network module is complete when:
 
 * [ ] VPC is created.
 * [ ] Internet Gateway is created.
-* [ ] Public subnets are created across multiple AZs.
-* [ ] Private subnets are created across multiple AZs.
-* [ ] Route tables are configured.
-* [ ] Outputs are available to consuming modules.
+* [ ] Public subnets are created across Availability Zones.
+* [ ] Private subnets are created across Availability Zones.
+* [ ] Public route table is configured.
+* [ ] Private route tables are configured.
+* [ ] Default security group is restricted.
+* [ ] VPC Flow Logs are enabled.
+* [ ] CloudWatch Log Group is configured.
+* [ ] Outputs are available to consuming applications.
 * [ ] Variables contain validation rules.
 * [ ] No credentials are stored.
+* [ ] Terraform formatting passes.
+* [ ] Terraform initialization passes.
 * [ ] Terraform validation passes.
 * [ ] Checkov validation passes.
 * [ ] Documentation is complete.
