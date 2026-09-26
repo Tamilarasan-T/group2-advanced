@@ -28,6 +28,20 @@ variable "vpc_cidr" {
   }
 }
 
+variable "availability_zones" {
+  description = "Explicit AWS Availability Zones to use for subnet placement."
+  type        = list(string)
+
+  validation {
+    condition = (
+      length(var.availability_zones) >= 2 &&
+      length(distinct(var.availability_zones)) == length(var.availability_zones)
+    )
+
+    error_message = "At least two unique Availability Zones must be provided."
+  }
+}
+
 variable "public_subnet_cidrs" {
   description = "CIDR blocks for public subnets."
   type        = list(string)
@@ -45,6 +59,17 @@ variable "private_subnet_cidrs" {
   validation {
     condition     = length(var.private_subnet_cidrs) >= 2
     error_message = "At least two private subnets are required for multi-AZ deployment."
+  }
+}
+
+variable "flow_log_retention_days" {
+  description = "Number of days to retain VPC Flow Logs in CloudWatch."
+  type        = number
+  default     = 30
+
+  validation {
+    condition     = var.flow_log_retention_days >= 1
+    error_message = "Flow log retention must be at least 1 day."
   }
 }
 
