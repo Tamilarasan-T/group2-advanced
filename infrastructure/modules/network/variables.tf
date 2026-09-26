@@ -65,11 +65,11 @@ variable "private_subnet_cidrs" {
 variable "flow_log_retention_days" {
   description = "Number of days to retain VPC Flow Logs in CloudWatch."
   type        = number
-  default     = 30
+  default     = 365
 
   validation {
-    condition     = var.flow_log_retention_days >= 1
-    error_message = "Flow log retention must be at least 1 day."
+    condition     = var.flow_log_retention_days >= 365
+    error_message = "Flow log retention must be at least 365 day."
   }
 }
 
