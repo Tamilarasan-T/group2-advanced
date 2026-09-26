@@ -34,6 +34,11 @@ output "private_route_table_ids" {
 }
 
 output "availability_zones" {
-  description = "Availability zones used by the subnets."
-  value       = data.aws_availability_zones.available.names
+  description = "Availability Zones configured for this network."
+  value       = var.availability_zones
+}
+
+output "flow_log_group_name" {
+  description = "CloudWatch Log Group receiving VPC Flow Logs."
+  value       = aws_cloudwatch_log_group.vpc_flow_logs.name
 }
