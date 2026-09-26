@@ -1,0 +1,63 @@
+name: Reusable Terraform
+
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        description: "Terraform working directory"
+        required: true
+        type: string
+
+      terraform-version:
+        description: "Terraform version"
+        required: false
+        type: string
+        default: "1.9.8"
+
+      run-checkov:
+        description: "Whether to run Checkov security scanning"
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: reusable-terraform-${{ github.repository }}-${{ github.ref }}-${{ inputs.working-directory }}
+  cancel-in-progress: true
+
+jobs:
+  terraform:
+    name: Terraform Validation
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ inputs.terraform-version }}
+
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive
+
+      - name: Terraform Init
+        run: terraform init -backend=false
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Run Checkov
+        if: ${{ inputs.run-checkov }}
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: ${{ inputs.working-directory }}
+          framework: terraform
+          quiet: true
