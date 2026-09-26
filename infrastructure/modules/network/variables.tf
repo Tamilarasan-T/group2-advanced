@@ -1,4 +1,3 @@
-```hcl
 variable "name" {
   description = "Application or platform name used for resource naming."
   type        = string
@@ -54,4 +53,3 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
-```
