@@ -11,6 +11,8 @@ locals {
   )
 }
 
+data "aws_caller_identity" "current" {}
+
 resource "aws_vpc" "this" {
   cidr_block           = var.vpc_cidr
   enable_dns_support   = true
@@ -125,9 +127,69 @@ resource "aws_default_security_group" "this" {
   )
 }
 
+resource "aws_kms_key" "vpc_flow_logs" {
+  description         = "KMS key for ${local.name_prefix} VPC Flow Logs"
+  enable_key_rotation = true
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+
+    Statement = [
+      {
+        Sid    = "EnableAccountRootPermissions"
+        Effect = "Allow"
+
+        Principal = {
+          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
+        }
+
+        Action   = "kms:*"
+        Resource = "*"
+      },
+      {
+        Sid    = "AllowCloudWatchLogs"
+        Effect = "Allow"
+
+        Principal = {
+          Service = "logs.amazonaws.com"
+        }
+
+        Action = [
+          "kms:Encrypt",
+          "kms:Decrypt",
+          "kms:ReEncrypt*",
+          "kms:GenerateDataKey*",
+          "kms:DescribeKey"
+        ]
+
+        Resource = "*"
+
+        Condition = {
+          ArnLike = {
+            "kms:EncryptionContext:aws:logs:arn" = "arn:aws:logs:*:${data.aws_caller_identity.current.account_id}:log-group:/aws/vpc/flow-logs/${local.name_prefix}"
+          }
+        }
+      }
+    ]
+  })
+
+  tags = merge(
+    local.common_tags,
+    {
+      Name = "${local.name_prefix}-vpc-flow-logs-key"
+    }
+  )
+}
+
+resource "aws_kms_alias" "vpc_flow_logs" {
+  name          = "alias/${local.name_prefix}-vpc-flow-logs"
+  target_key_id = aws_kms_key.vpc_flow_logs.key_id
+}
+
 resource "aws_cloudwatch_log_group" "vpc_flow_logs" {
   name              = "/aws/vpc/flow-logs/${local.name_prefix}"
   retention_in_days = var.flow_log_retention_days
+  kms_key_id        = aws_kms_key.vpc_flow_logs.arn
 
   tags = merge(
     local.common_tags,
