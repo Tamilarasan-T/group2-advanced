@@ -2,260 +2,126 @@
 
 ## Purpose
 
-This policy defines the minimum security controls for repositories and platform capabilities onboarded to the Acme Retail Internal Developer Platform.
+Define minimum security controls for repositories and platform capabilities on the Acme Retail Internal Developer Platform.
 
-The objective is to identify security risks early, prevent secrets from entering source control, and establish consistent security controls across application and infrastructure repositories.
-
-## Security Principles
-
-The platform follows these principles:
+## Principles
 
 - Secure by default
 - Least privilege
 - Defense in depth
 - Shift-left security
-- No hardcoded credentials
-- Automated security validation
+- No hard-coded credentials
+- Automated validation
 - Traceable changes
-- Continuous improvement
 
 ## Secret Management
 
 Secrets must never be committed to source control.
 
-Examples include:
+Use approved mechanisms such as:
 
-- Cloud access keys
-- Passwords
-- API tokens
-- Private keys
-- Database credentials
-- Service credentials
-- Authentication tokens
+- GitHub Secrets
+- GitHub Environments
+- AWS Secrets Manager
 
-Approved secret-management mechanisms must be used for runtime secrets.
+## Security Scanning
 
-GitHub Actions secrets or approved external secret-management platforms may be used according to organizational standards.
+Required controls where applicable:
 
-## Secret Scanning
+| Tool | Purpose |
+|---|---|
+| Gitleaks | Secret scanning |
+| Trivy | Vulnerability scanning |
+| Checkov | Terraform security |
 
-Repositories should use Gitleaks or an approved equivalent to detect accidentally committed secrets.
-
-Secret scanning should run:
-
-- During Pull Requests
-- During protected branch changes
-- As part of reusable platform workflows
-
-A detected secret should be treated as a security incident until verified otherwise.
-
-## Dependency and Filesystem Scanning
-
-Trivy or an approved equivalent should scan application dependencies and relevant repository content.
-
-High and critical vulnerabilities should fail the applicable security pipeline unless an approved exception exists.
-
-Unfixed vulnerabilities may be handled according to the organization's vulnerability-management process.
+High/Critical findings should block merging unless an approved exception exists.
 
 ## Container Security
 
-Container images should:
+Containers should:
 
-- Use trusted base images.
-- Avoid unnecessary packages.
-- Run as a non-root user where practical.
-- Be scanned for vulnerabilities.
-- Avoid embedding secrets.
-- Use immutable image tags where supported.
-- Be rebuilt when critical vulnerabilities require remediation.
-
-The platform container module enables immutable ECR image tags and image scanning.
+- Use trusted/minimal images.
+- Avoid embedded secrets.
+- Run as non-root where practical.
+- Use immutable image tags.
+- Be vulnerability scanned.
 
 ## Infrastructure Security
 
-Terraform code must pass the required security validation.
+Terraform must follow:
 
-Checkov or an approved equivalent should be used to identify infrastructure security issues.
-
-Infrastructure should follow:
-
-- Least privilege
-- Encryption at rest
-- Encryption in transit where applicable
+- Least-privilege IAM
+- Encryption
 - Restricted network access
 - Secure logging
-- Appropriate retention
 - Standard tagging
 - Environment separation
+- Checkov validation
 
-## IAM Security
+## IAM and Network
 
-IAM policies should follow least privilege.
+IAM must avoid unnecessary wildcard permissions and use restricted service principals.
 
-The following practices are required:
+Network infrastructure should minimize public exposure, restrict administrative access and separate public/private workloads where required.
 
-- Avoid unnecessary wildcard permissions.
-- Restrict resources where practical.
-- Use approved service principals.
-- Avoid long-lived access credentials.
-- Review privileged permissions.
-- Separate application and administrative roles.
+## Logging
 
-## Network Security
+Security-relevant logs should use approved monitoring standards.
 
-Network infrastructure should:
+The platform supports:
 
-- Avoid unnecessary public exposure.
-- Restrict administrative ports.
-- Use security groups with minimal access.
-- Enable appropriate logging.
-- Separate public and private workloads where required.
-- Use approved network security controls.
-
-## Logging and Monitoring
-
-Security-relevant events should be logged and monitored.
-
-The platform observability capability provides:
-
-- CloudWatch Log Groups
+- CloudWatch Logs
 - KMS encryption
 - Configurable retention
-- Standardized resource tagging
-
-Production workloads should integrate with the organization's monitoring and alerting standards.
+- Standard tagging
 
 ## Security Gates
 
-Applicable repositories should enforce security checks before merge.
-
-Example:
-
+```text
 Pull Request
-     |
-     +--> Gitleaks
-     |
-     +--> Trivy
-     |
-     +--> Checkov
-     |
-     +--> Tests
-     |
-     +--> Review
-     |
-     +--> Merge
+     ↓
+Gitleaks
+     ↓
+Trivy
+     ↓
+Checkov
+     ↓
+Tests
+     ↓
+Review
+     ↓
+Merge
+````
 
+Required security checks must pass before merge.
 
-A failed security gate should prevent merging when the repository's governance configuration requires that check.
+## Exceptions
 
-## Vulnerability Severity
+Security exceptions must be:
 
-Security findings should be prioritized based on:
-
-* Severity
-* Exploitability
-* Exposure
-* Business impact
-* Environment
-* Availability of remediation
-
-High and critical findings should receive priority remediation.
-
-Severity classifications should follow the organization's approved vulnerability-management standard.
-
-## Security Exceptions
-
-A security control may only be bypassed through an approved exception process.
-
-Exceptions must document:
-
-* Repository or system
-* Security finding
-* Business or technical reason
-* Risk assessment
-* Compensating controls
-* Owner
-* Approval
-* Expiration date
-* Remediation plan
-
-Exceptions must be time-bound.
-
-Permanent security exceptions should not be used as a substitute for remediation.
+* Documented
+* Risk-assessed
+* Approved
+* Time-bound
+* Assigned an owner
+* Supported by a remediation plan
 
 ## Production Security
 
-Production changes should receive the required approvals.
+IAM, network, authentication, authorization, secrets, encryption and security-control changes require appropriate owner/security review.
 
-Changes involving:
+## Incident Response
 
-* IAM
-* Network access
-* Authentication
-* Authorization
-* Secrets
-* Encryption
-* Security controls
+Potential security incidents must be reported through the approved incident-management process, investigated, remediated and documented.
 
-should receive appropriate owner or security review.
+## Responsibilities
 
-## Security Incident Response
+**Application Teams:** Secure code, dependencies, containers and application configuration.
 
-When a potential security incident is identified:
+**Platform Team:** Secure workflows, Terraform modules, repository standards and tooling.
 
-1. Preserve relevant evidence.
-2. Report through the approved incident-management process.
-3. Restrict or revoke compromised credentials when appropriate.
-4. Assess affected systems.
-5. Remediate the issue.
-6. Document the incident.
-7. Perform follow-up actions when required.
-
-## Developer Responsibilities
-
-Developers and application teams are responsible for:
-
-* Following secure coding practices.
-* Protecting credentials.
-* Reviewing security findings.
-* Updating vulnerable dependencies.
-* Maintaining secure container images.
-* Following repository governance.
-* Reporting suspected security incidents.
-
-## Platform Engineering Responsibilities
-
-Platform Engineering is responsible for:
-
-* Maintaining reusable security workflows.
-* Maintaining secure Terraform modules.
-* Maintaining repository security standards.
-* Updating security tooling.
-* Providing secure defaults.
-* Monitoring platform security requirements.
-
-## Security Team Responsibilities
-
-The Security team provides:
-
-* Security guidance
-* Vulnerability-management standards
-* Security exception review
-* Incident-response guidance
-* Compliance requirements
+**Security Team:** Security standards, exceptions, vulnerability governance and incident guidance.
 
 ## Definition of Done
 
-A repository is security-compliant when applicable controls are implemented:
-
-* Secret scanning enabled
-* Vulnerability scanning enabled
-* Infrastructure security scanning enabled
-* Required security checks enforced
-* Secrets excluded from source control
-* IAM follows least privilege
-* Containers follow secure practices
-* Infrastructure uses secure defaults
-* Security exceptions are documented and time-bound
-* Security-sensitive changes receive appropriate review
-
+A repository is security-compliant when applicable security scanning, secret protection, least privilege, secure infrastructure, appropriate reviews and exception controls are implemented.
