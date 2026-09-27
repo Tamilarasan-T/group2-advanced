@@ -2,83 +2,56 @@
 
 ## 1. Document Information
 
-| Field         | Value                                   |
-| ------------- | --------------------------------------- |
-| Specification | Reusable Terraform Modules              |
-| Version       | 1.0                                     |
-| Status        | Draft                                   |
-| Platform      | Acme Retail Internal Developer Platform |
-| IaC           | Terraform                               |
-| Cloud         | AWS                                     |
-| Security      | Checkov                                 |
-| Validation    | Terraform Validate                      |
+| Field | Value |
+|---|---|
+| Specification | Reusable Terraform Modules |
+| Version | 1.0 |
+| Status | Approved |
+| Platform | Acme Retail Internal Developer Platform |
+| IaC | Terraform |
+| Cloud | AWS |
+| Security | Checkov |
 
 ---
 
 ## 2. Purpose
 
-This specification defines the standards for reusable Terraform modules provided by the Internal Developer Platform.
+Provide reusable, secure and versioned Terraform modules for common AWS infrastructure.
 
-The objective is to eliminate duplicated Terraform implementations across application teams while providing secure, maintainable, configurable, versioned, and well-documented infrastructure components.
-
-Application teams must consume platform-provided Terraform modules instead of copying infrastructure implementation into individual application repositories.
+Application teams must consume platform modules instead of duplicating infrastructure code.
 
 ---
 
 ## 3. Business Problem
 
-Acme Retail application teams currently create infrastructure independently.
+Independent infrastructure implementations cause:
 
-This results in:
+- Duplicate Terraform code
+- Inconsistent architecture and security
+- Configuration drift
+- Higher maintenance effort
+- Longer onboarding
 
-* Duplicate Terraform code
-* Inconsistent infrastructure architecture
-* Inconsistent security configurations
-* Increased maintenance effort
-* Configuration drift
-* Longer application onboarding
-* Repeated troubleshooting
-* Difficulty applying organization-wide standards
-
-The platform must provide reusable infrastructure building blocks that solve these problems.
+The platform standardizes infrastructure through reusable modules.
 
 ---
 
 ## 4. Goals
 
-The Terraform platform must:
+The platform must:
 
-1. Provide reusable infrastructure modules.
-2. Minimize duplicated Terraform code.
-3. Provide secure defaults.
-4. Support multiple application teams.
-5. Support multiple environments.
-6. Provide configurable module inputs.
-7. Provide documented outputs.
-8. Support module versioning.
-9. Support local validation.
-10. Integrate with CI/CD.
-11. Integrate with Checkov security scanning.
-12. Follow Terraform best practices.
+- Provide reusable AWS infrastructure modules.
+- Minimize duplicated Terraform.
+- Use secure defaults.
+- Support multiple applications and environments.
+- Support configurable inputs and outputs.
+- Support versioning.
+- Integrate CI/CD and Checkov.
+- Enable reproducible validation.
 
 ---
 
-## 5. Non-Goals
-
-The initial implementation will not:
-
-* Create modules for every AWS service.
-* Implement unrestricted production infrastructure.
-* Store credentials in Terraform source code.
-* Create application-specific infrastructure modules.
-* Hard-code environment-specific configuration inside reusable modules.
-* Require AWS resources for basic Terraform validation.
-
----
-
-## 6. Module Architecture
-
-The initial platform should provide reusable modules for common infrastructure requirements.
+## 5. Module Architecture
 
 ```text
 infrastructure/
@@ -87,18 +60,28 @@ infrastructure/
     ├── iam/
     ├── container/
     └── observability/
-```
+````
 
-Additional modules may be introduced when a clear reusable requirement is identified.
+Additional modules may be added when a reusable platform requirement is identified.
 
 ---
 
-## 7. Standard Module Structure
+## 6. Module Standards
 
-Every module must follow this structure:
+Each module must:
+
+* Have one clear responsibility.
+* Avoid application-specific logic.
+* Use configurable variables.
+* Provide documented outputs.
+* Use secure defaults.
+* Include validation where appropriate.
+* Be independently testable.
+
+Standard structure:
 
 ```text
-module-name/
+module/
 ├── main.tf
 ├── variables.tf
 ├── outputs.tf
@@ -107,244 +90,62 @@ module-name/
 └── tests/
 ```
 
-Optional files may include:
+---
 
-```text
-locals.tf
-data.tf
-security.tf
-```
+## 7. Available Modules
 
-Files should only be added when they improve clarity and maintainability.
+### Network
+
+Provides standardized VPC, subnets, routing and required network controls.
+
+### IAM
+
+Provides reusable IAM roles and policies using least privilege.
+
+### Container
+
+Provides reusable container infrastructure such as Amazon ECR with secure configuration and image scanning support.
+
+### Observability
+
+Provides standardized CloudWatch logging, retention, metrics and alarms where required.
 
 ---
 
-## 8. Module Design Principles
+## 8. Security Standards
 
-Every Terraform module must:
+All modules must follow secure-by-default principles.
 
-* Have one clear responsibility.
-* Avoid application-specific business logic.
-* Use variables for configuration.
-* Provide meaningful outputs.
-* Use secure defaults.
-* Avoid unnecessary complexity.
-* Follow Terraform naming conventions.
-* Include documentation.
-* Include validation where appropriate.
-* Be independently testable.
+* No credentials or secrets in Terraform source.
+* Use least-privilege IAM.
+* Avoid unrestricted `Action = "*"` / `Resource = "*"`.
+* Encrypt supported resources.
+* Avoid public access by default.
+* Restrict administrative ports.
+* Use Checkov security scanning.
 
 ---
 
-# 9. Network Module
+## 9. Input and Output Standards
 
-## Purpose
+Variables must:
 
-Provide standardized networking infrastructure that can be reused by multiple applications.
-
-Potential resources include:
-
-* VPC
-* Public subnets
-* Private subnets
-* Internet Gateway
-* Route tables
-* NAT configuration where required
-
-### Required Inputs
-
-The module should support configuration for:
-
-* Environment
-* VPC CIDR
-* Availability Zones
-* Public subnet configuration
-* Private subnet configuration
-* Application name
-* Owner
-* Cost center
-* Tags
-
-### Example
-
-```hcl
-module "network" {
-  source = "../../modules/network"
-
-  environment = "dev"
-  vpc_cidr    = "10.0.0.0/16"
-
-  availability_zones = [
-    "ap-south-1a",
-    "ap-south-1b"
-  ]
-}
-```
-
-The implementation must avoid hard-coding environment-specific values inside the module.
-
----
-
-# 10. IAM Module
-
-## Purpose
-
-Provide reusable IAM roles and policies following the principle of least privilege.
-
-The module must:
-
-* Prefer IAM roles over long-lived access keys.
-* Avoid wildcard permissions where possible.
-* Support explicit policies.
-* Avoid hard-coded credentials.
-* Support application-specific role requirements through controlled inputs.
-
-The module should not create IAM users unless there is a documented business requirement.
-
----
-
-# 11. Container Module
-
-## Purpose
-
-Provide reusable container infrastructure.
-
-The initial implementation may support:
-
-* Amazon ECR
-* ECS-related resources where required
-* Container image configuration
-
-The module must support secure container deployment patterns.
-
-Container images must be scanned before deployment.
-
-The module must not embed credentials inside container configuration.
-
----
-
-# 12. Observability Module
-
-## Purpose
-
-Provide standardized observability infrastructure.
-
-Potential capabilities include:
-
-* CloudWatch log groups
-* Log retention
-* Metrics
-* Alarms
-
-Log retention must be configurable.
-
-The default retention period should be finite rather than unlimited.
-
----
-
-# 13. Input Requirements
-
-Terraform variables must:
-
-* Have meaningful names.
-* Have descriptions.
-* Use appropriate Terraform types.
-* Include validation rules where useful.
+* Have descriptions and appropriate types.
+* Use validation where useful.
 * Avoid unnecessary defaults.
-* Mark sensitive inputs as sensitive where appropriate.
-
-Example:
-
-```hcl
-variable "environment" {
-  description = "Deployment environment."
-  type        = string
-
-  validation {
-    condition     = contains(["dev", "test", "prod"], var.environment)
-    error_message = "Environment must be dev, test, or prod."
-  }
-}
-```
-
----
-
-# 14. Output Requirements
+* Mark sensitive values appropriately.
 
 Outputs must:
 
-* Have meaningful names.
-* Include descriptions.
+* Have meaningful names and descriptions.
 * Expose only required information.
-* Never expose secrets unnecessarily.
-
-Example:
-
-```hcl
-output "vpc_id" {
-  description = "ID of the created VPC."
-  value       = aws_vpc.this.id
-}
-```
-
-Sensitive outputs must be marked appropriately.
+* Not unnecessarily expose secrets.
 
 ---
 
-# 15. Security Requirements
+## 10. Standard Tags
 
-All Terraform modules must follow secure-by-default principles.
-
-## Credentials
-
-Never store:
-
-* AWS access keys
-* AWS secret keys
-* Passwords
-* Tokens
-* Private keys
-
-in Terraform source code.
-
-## IAM
-
-Use least-privilege policies.
-
-Avoid unrestricted permissions such as:
-
-```text
-Action   = "*"
-Resource = "*"
-```
-
-unless explicitly justified.
-
-## Encryption
-
-Enable encryption for supported resources.
-
-## Public Access
-
-Resources should not be publicly accessible by default.
-
-## Security Groups
-
-Avoid unrestricted inbound access to administrative ports.
-
-For example, SSH/RDP should not normally be exposed to:
-
-```text
-0.0.0.0/0
-```
-
----
-
-# 16. Standard Tags
-
-Supported AWS resources should use common organizational tags.
-
-Minimum tags:
+AWS resources should use:
 
 ```text
 Application
@@ -354,35 +155,13 @@ Owner
 CostCenter
 ```
 
-Example:
-
-```hcl
-tags = {
-  Application = var.application_name
-  Environment = var.environment
-  ManagedBy   = "Terraform"
-  Owner       = var.owner
-  CostCenter  = var.cost_center
-}
-```
-
 ---
 
-# 17. Terraform Versioning
+## 11. Versioning and State
 
-Modules must define supported Terraform versions.
+Terraform modules must define supported Terraform and provider versions.
 
-Example:
-
-```hcl
-terraform {
-  required_version = ">= 1.6.0"
-}
-```
-
-Provider versions must also be constrained.
-
-Platform modules should follow semantic versioning:
+Modules use semantic versioning:
 
 ```text
 MAJOR.MINOR.PATCH
@@ -390,41 +169,7 @@ MAJOR.MINOR.PATCH
 
 Breaking changes require a major version.
 
-Backward-compatible functionality requires a minor version.
-
-Bug fixes require a patch version.
-
----
-
-# 18. Environment Separation
-
-Reusable modules must remain environment-independent.
-
-Recommended structure:
-
-```text
-infrastructure/
-├── modules/
-│   ├── network/
-│   ├── iam/
-│   ├── container/
-│   └── observability/
-│
-└── environments/
-    ├── dev/
-    ├── test/
-    └── prod/
-```
-
-Environment-specific values must be supplied by environment configurations.
-
----
-
-# 19. Terraform State
-
 Terraform state must never be committed to Git.
-
-The repository must exclude:
 
 ```text
 *.tfstate
@@ -432,188 +177,79 @@ The repository must exclude:
 .terraform/
 ```
 
-For AWS environments, remote state should use an appropriate backend with access control, encryption, and state locking.
-
-For local validation, local state may be used temporarily.
+AWS environments should use secure remote state with access control, encryption and state locking.
 
 ---
 
-# 20. CI/CD Integration
+## 12. Environment Separation
 
-Terraform modules must integrate with the reusable platform workflow.
+Reusable modules must remain environment-independent.
 
-The pipeline should perform:
+```text
+infrastructure/
+├── modules/
+└── environments/
+    ├── dev/
+    ├── test/
+    └── prod/
+```
+
+Environment-specific configuration must be supplied by environment configurations rather than hard-coded in modules.
+
+---
+
+## 13. CI/CD and Validation
+
+Terraform changes must be validated through the reusable platform workflow.
 
 ```text
 Terraform Format
-        ↓
+       ↓
 Terraform Init
-        ↓
+       ↓
 Terraform Validate
-        ↓
+       ↓
 Checkov
-        ↓
+       ↓
 Terraform Plan
 ```
 
-Production changes must require appropriate approval according to governance requirements.
+Local validation must not require live AWS infrastructure.
+
+Production changes require appropriate approval.
 
 ---
 
-# 21. Testing Strategy
+## 14. Reusability
 
-Terraform modules must be validated at multiple levels.
+The same platform modules must support multiple applications.
 
-### Formatting
-
-```bash
-terraform fmt -check -recursive
-```
-
-### Validation
-
-```bash
-terraform validate
-```
-
-### Security
-
-```bash
-checkov -d .
-```
-
-### Plan
-
-```bash
-terraform plan
-```
-
-Where practical, Terraform-native tests should be added to validate module behavior.
-
----
-
-# 22. Local Validation
-
-The platform must support Terraform validation without requiring dedicated AWS infrastructure.
-
-Developers must be able to perform at minimum:
+Example consumers:
 
 ```text
-Terraform formatting
-Terraform initialization
-Terraform validation
-Checkov scanning
-Static analysis
+        Reusable Modules
+          /          \
+     Orders API    Payments API
 ```
 
-Actual AWS deployment is optional for local validation.
+Applications may use different configuration values but must not duplicate the module implementation.
 
 ---
 
-# 23. Documentation Requirements
+## 15. Acceptance Criteria / Definition of Done
 
-Every module must contain a README documenting:
+The Terraform platform is complete when:
 
-* Module purpose
-* Supported Terraform versions
-* Required providers
-* Inputs
-* Outputs
-* Example usage
-* Dependencies
-* Security considerations
-* Version information
-
----
-
-# 24. Reusability Requirement
-
-Terraform modules must support multiple applications.
-
-Example:
-
-```text
-                  Network Module
-                       │
-          ┌────────────┼────────────┐
-          │            │            │
-         IMS         Orders      Payments
-          │            │            │
-        Team A       Team B       Team C
-```
-
-Applications may provide different configuration values but must consume the same platform module implementation.
-
----
-
-# 25. Acceptance Criteria
-
-### AC-001
-
-All modules follow the standard directory structure.
-
-### AC-002
-
-Modules contain no application-specific business logic.
-
-### AC-003
-
-Variables and outputs are documented.
-
-### AC-004
-
-Terraform formatting passes.
-
-### AC-005
-
-Terraform validation passes.
-
-### AC-006
-
-Checkov scanning is integrated.
-
-### AC-007
-
-No credentials or secrets are stored in Terraform source code.
-
-### AC-008
-
-IAM configurations follow least-privilege principles.
-
-### AC-009
-
-Supported resources use standardized tags.
-
-### AC-010
-
-Terraform state is excluded from source control.
-
-### AC-011
-
-Environment-specific configuration is separated from reusable modules.
-
-### AC-012
-
-At least two sample applications can consume the modules.
-
-### AC-013
-
-CI/CD can validate Terraform changes automatically.
-
----
-
-# 26. Definition of Done
-
-The Terraform platform capability is complete when:
-
-* Reusable modules are implemented.
-* Modules are documented.
-* Security scanning passes.
-* Terraform validation passes.
-* IMS consumes the reusable modules.
-* A second sample application consumes the same modules.
-* No duplicated infrastructure implementation exists between applications.
-* CI/CD integration is working.
-* Architectural decisions are documented.
-* Local validation is reproducible.
-
+* [ ] Standard module structure is followed.
+* [ ] Network, IAM, Container and Observability modules are available.
+* [ ] Modules contain no application-specific logic.
+* [ ] Security defaults are implemented.
+* [ ] Checkov validation passes.
+* [ ] Terraform format and validation pass.
+* [ ] No secrets are stored in source.
+* [ ] Terraform state is excluded from Git.
+* [ ] CI/CD validation is working.
+* [ ] Orders API consumes the modules.
+* [ ] Payments API consumes the same modules.
+* [ ] Modules are documented and version controlled.
+* [ ] Reusable infrastructure is not duplicated between applications.
