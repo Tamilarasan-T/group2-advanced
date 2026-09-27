@@ -1,767 +1,692 @@
-# AI Engineering Specification — Standard Application Repository Template
+# AI Engineering Specification — Repository Template
 
-## 1. Document Information
+## 1. Purpose
 
-| Field          | Value                                    |
-| -------------- | ---------------------------------------- |
-| Specification  | Standard Application Repository Template |
-| Version        | 1.0                                      |
-| Status         | Draft                                    |
-| Platform       | Acme Retail Internal Developer Platform  |
-| Source Control | GitHub                                   |
-| CI/CD          | GitHub Actions                           |
-| IaC            | Terraform                                |
-| Container      | Docker                                   |
+Define a standardized application repository template that enables application teams to start new projects with a consistent structure, engineering standards, security controls, CI/CD integration, documentation, and platform integration.
+
+The repository template is a reusable platform capability and should minimize duplicated setup work across application teams.
 
 ---
 
-# 2. Purpose
+## 2. Business Problem
 
-This specification defines the standard repository structure that application teams must use when onboarding applications to the Acme Retail Internal Developer Platform.
+Application teams currently create repositories independently.
 
-The objective is to eliminate inconsistent repository structures, reduce onboarding effort, and provide every application team with a standardized engineering baseline.
+This can result in:
 
----
+- Different repository structures
+- Different CI/CD implementations
+- Inconsistent security controls
+- Missing documentation
+- Different testing approaches
+- Different infrastructure patterns
+- Inconsistent governance
+- Longer onboarding time
+- Higher platform maintenance effort
 
-# 3. Business Problem
-
-Application teams currently use different repository structures and engineering practices.
-
-This creates:
-
-* Inconsistent project organization
-* Difficult onboarding
-* Duplicate configuration
-* Difficult automation
-* Inconsistent documentation
-* Inconsistent CI/CD configuration
-* Inconsistent security configuration
-* Increased platform maintenance
-
-The repository template provides a common baseline for all applications.
+The repository template provides a standardized starting point for application teams.
 
 ---
 
-# 4. Goals
+## 3. Goals
 
 The repository template must:
 
-1. Provide a standard repository structure.
-2. Reduce application onboarding effort.
-3. Provide standardized documentation.
-4. Provide CI/CD integration.
-5. Provide security integration.
-6. Provide infrastructure structure.
-7. Provide testing structure.
-8. Support multiple application technologies.
-9. Minimize application-specific configuration.
-10. Enable developers to start development quickly.
+- Provide a consistent repository structure.
+- Reduce application onboarding effort.
+- Integrate with reusable GitHub Actions.
+- Support Terraform-based infrastructure.
+- Include automated testing.
+- Include security controls.
+- Provide standard documentation.
+- Support AI Engineering Specifications.
+- Support Engineering Decision Records.
+- Provide CODEOWNERS and pull request standards.
+- Support Docker-based application packaging.
+- Provide a consistent developer experience.
 
 ---
 
-# 5. Non-Goals
+## 4. Non-Goals
 
-The repository template will not:
+The repository template does not:
 
-* Contain application-specific business logic.
-* Force every application to use the same programming language.
-* Contain production credentials.
-* Contain environment-specific secrets.
-* Replace application-team ownership.
-* Duplicate reusable platform workflow implementations.
+- Implement application-specific business logic.
+- Contain production credentials.
+- Contain environment-specific secrets.
+- Create application-specific AWS infrastructure directly.
+- Replace application team ownership.
+- Replace platform governance.
+- Require every application to use the same programming language.
 
 ---
 
-# 6. Standard Repository Structure
+## 5. Standard Repository Structure
 
-Every onboarded application should follow:
+Each application repository created from the template should follow this structure:
 
 ```text
-application-repository/
-│
-├── README.md
-│
-├── app/
-│   └── src/
-│
-├── tests/
-│
-├── infrastructure/
-│   ├── main.tf
-│   ├── variables.tf
-│   ├── outputs.tf
-│   └── environments/
-│       ├── dev/
-│       ├── test/
-│       └── prod/
-│
-├── docs/
-│
-├── architecture/
-│
-├── ai-specifications/
-│
-├── engineering-decisions/
-│
+.
 ├── .github/
-│   └── workflows/
-│
-├── Dockerfile
-│
+│   ├── workflows/
+│   ├── CODEOWNERS
+│   └── pull_request_template.md
+├── ai-specifications/
+├── app/
+├── architecture/
+├── docs/
+├── engineering-decisions/
+├── infrastructure/
+├── tests/
 ├── .dockerignore
-│
 ├── .gitignore
-│
-└── LICENSE
-```
-
-The exact application source structure may vary according to the programming language.
-
----
-
-# 7. Repository Responsibilities
-
-## Application Code
-
-Application code must be located under:
-
-```text
-app/
-```
-
-The application team owns this code.
+├── Dockerfile
+├── LICENSE
+├── README.md
+└── VERSION
+````
 
 ---
 
-## Tests
+## 6. Directory Responsibilities
 
-Tests must be located under:
+### `.github/`
 
-```text
-tests/
-```
+Contains GitHub repository configuration.
 
-The repository should support unit tests and, where applicable, integration tests.
+Expected contents:
+
+* Reusable workflow consumers
+* CODEOWNERS
+* Pull request template
+
+### `app/`
+
+Contains application source code.
+
+Application teams own the application implementation.
+
+### `tests/`
+
+Contains automated application tests.
+
+Tests must be executed as part of CI where applicable.
+
+### `infrastructure/`
+
+Contains application-specific Terraform configuration that consumes reusable platform modules.
+
+Application teams should prefer reusable platform modules instead of duplicating infrastructure implementation.
+
+### `docs/`
+
+Contains application documentation, operational guidance, and supporting technical documentation.
+
+### `architecture/`
+
+Contains application architecture documentation and diagrams.
+
+### `ai-specifications/`
+
+Contains AI Engineering Specifications used to define implementation requirements.
+
+### `engineering-decisions/`
+
+Contains Architecture Decision Records and important engineering decisions.
+
+### `.github/workflows/`
+
+Contains workflow consumers and application-specific workflow configuration.
+
+Reusable platform workflows should be consumed rather than duplicated where applicable.
 
 ---
 
-## Infrastructure
+## 7. Required Repository Files
 
-Application-specific infrastructure configuration belongs under:
+The template should provide the following standard files:
 
-```text
-infrastructure/
-```
+### `README.md`
 
-Reusable platform Terraform modules must not be copied into this directory.
+Must document:
 
-Applications should consume the centralized platform modules.
-
----
-
-## Documentation
-
-Application documentation belongs under:
-
-```text
-docs/
-```
-
-Documentation should include:
-
-* Setup
-* Development
+* Application purpose
+* Repository structure
+* Local development
 * Testing
-* Deployment
-* Troubleshooting
-* Operational information
+* Docker usage
+* Infrastructure
+* CI/CD
+* Security
+* Ownership
+* Support information
 
----
+### `Dockerfile`
 
-## Architecture
+Must provide a secure container build pattern.
 
-Architecture diagrams and architecture documentation belong under:
+The container should:
 
-```text
-architecture/
-```
+* Use a minimal appropriate base image.
+* Avoid unnecessary packages.
+* Avoid embedding secrets.
+* Run as a non-root user where supported.
 
-Mermaid diagrams are recommended for version-controlled diagrams.
+### `.dockerignore`
 
----
+Must prevent unnecessary files from being copied into the container image.
 
-## AI Specifications
+Examples include:
 
-AI Engineering Specifications relevant to the application belong under:
+* `.git/`
+* `.github/`
+* `tests/`
+* Local caches
+* Documentation not required at runtime
+* Development artifacts
 
-```text
-ai-specifications/
-```
+### `.gitignore`
 
-Specifications should define expected behavior before AI-assisted implementation.
+Must exclude generated, local, and sensitive files.
 
----
+Examples include:
 
-## Engineering Decisions
+* `.terraform/`
+* `*.tfstate`
+* `*.tfstate.*`
+* `.env`
+* `.env.*`
+* Python cache files
+* Virtual environments
+* IDE-specific files
+* Local log files
 
-Architecture Decision Records belong under:
+The Terraform dependency lock file:
 
-```text
-engineering-decisions/
-```
+`.terraform.lock.hcl`
 
----
+**must not be ignored and should be committed to version control** so Terraform provider dependency versions remain consistent across environments and CI/CD executions.
 
-# 8. README Requirements
+### `LICENSE`
 
-Every application repository must contain a README with:
+The repository template must include a project-approved open-source or internal license appropriate for the organization.
 
-1. Application name
-2. Application purpose
-3. Architecture overview
-4. Technology stack
-5. Local development instructions
-6. Testing instructions
-7. Docker instructions
-8. Infrastructure instructions
-9. CI/CD information
-10. Security information
-11. Deployment information
-12. Troubleshooting
-13. Ownership information
+### `VERSION`
 
-Example:
-
-```markdown
-# Inventory Management System
-
-## Overview
-
-<application description>
-
-## Technology Stack
-
-<technology>
-
-## Local Development
-
-<instructions>
-
-## Testing
-
-<instructions>
-
-## Docker
-
-<instructions>
-
-## Infrastructure
-
-<instructions>
-
-## CI/CD
-
-<instructions>
-
-## Security
-
-<instructions>
-
-## Deployment
-
-<instructions>
-
-## Ownership
-
-<team information>
-```
-
----
-
-# 9. GitHub Workflow Integration
-
-Application repositories should consume reusable platform workflows.
-
-The repository should avoid duplicating complete workflow implementations.
-
-Example:
-
-```yaml
-name: CI
-
-on:
-  pull_request:
-
-jobs:
-  ci:
-    uses: organization/platform-workflows/.github/workflows/ci.yml@v1
-    with:
-      application_name: ims
-      language: python
-```
-
-The exact organization and workflow repository will be configured during implementation.
-
----
-
-# 10. Branching Strategy
-
-The standard repository should support:
-
-```text
-main
-```
-
-and short-lived feature branches.
+The repository template must include a version identifier.
 
 Example:
 
 ```text
-main
- │
- ├── feature/inventory-api
- ├── feature/product-search
- └── bugfix/inventory-validation
+1.0.0
 ```
 
-Long-lived feature branches should be avoided unless there is a documented reason.
+Template versions must follow Semantic Versioning:
+
+* Major — breaking changes
+* Minor — backward-compatible features
+* Patch — backward-compatible fixes
 
 ---
 
-# 11. Pull Request Requirements
+## 8. CODEOWNERS
 
-Changes should normally be introduced through pull requests.
-
-Pull requests should require:
-
-* Code review
-* Successful CI
-* Security checks
-* Required tests
-* Terraform validation when infrastructure changes
-* Documentation updates when applicable
-
-Direct pushes to protected branches should be restricted according to governance requirements.
-
----
-
-# 12. CODEOWNERS
-
-Repositories should use:
+The repository must define ownership using:
 
 ```text
 .github/CODEOWNERS
 ```
 
-where appropriate.
+CODEOWNERS should identify the responsible platform or application owners for repository changes.
 
 Example:
 
 ```text
-/app/ @application-team
-/infrastructure/ @platform-team
-/.github/ @platform-team
+* @Tamilarasan-T
 ```
 
-Actual ownership must be configured according to the organization's team structure.
+Actual ownership should be configured according to the organization's GitHub ownership model.
 
 ---
 
-# 13. Docker Requirements
+## 9. Pull Request Standards
 
-Applications requiring containers must provide:
+The repository should provide:
 
 ```text
-Dockerfile
-.dockerignore
+.github/pull_request_template.md
 ```
 
-Dockerfiles should:
+Pull requests should include:
 
-* Use minimal suitable base images.
-* Avoid hard-coded secrets.
-* Avoid unnecessary packages.
-* Use a non-root user where practical.
-* Pin dependencies where appropriate.
-* Expose only required ports.
-* Be scanned before deployment.
+* Change summary
+* Reason for change
+* Testing performed
+* Security impact
+* Infrastructure impact
+* Documentation impact
+
+Changes should be reviewed before merging into protected branches.
 
 ---
 
-# 14. Environment Configuration
+## 10. Branching Standards
 
-Environment-specific configuration must not contain secrets in source control.
+The repository should use:
 
-Example:
+* `main` as the protected default branch.
+* Feature branches for development.
+* Pull requests for changes.
+
+Direct pushes to protected production branches should be prevented through GitHub repository rules or branch protection.
+
+---
+
+## 11. Testing Standards
+
+Application repositories should provide automated tests under:
 
 ```text
-infrastructure/
-└── environments/
-    ├── dev/
-    ├── test/
-    └── prod/
+tests/
 ```
 
-Configuration should be separated from reusable platform infrastructure.
+CI should execute applicable tests before merging.
+
+Minimum expectations:
+
+* Unit tests for application logic.
+* Test failures must fail the CI pipeline.
+* Tests should be repeatable.
+* Test dependencies should be version controlled.
 
 ---
 
-# 15. Secrets Management
+## 12. CI/CD Integration
 
-The repository must never contain:
+The repository template should integrate with reusable GitHub Actions.
+
+Expected pipeline capabilities include:
 
 ```text
-Passwords
-API keys
-AWS credentials
-Private keys
-Access tokens
-Database credentials
-```
-
-These must be provided through approved secret-management mechanisms.
-
-Files containing environment secrets must be excluded using `.gitignore` where appropriate.
-
----
-
-# 16. Standard `.gitignore`
-
-The template should include common exclusions.
-
-Example:
-
-```gitignore
-# Terraform
-.terraform/
-*.tfstate
-*.tfstate.*
-.terraform.lock.hcl
-
-# Environment
-.env
-.env.*
-
-# IDE
-.vscode/
-.idea/
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Application
-__pycache__/
-*.pyc
-
-# Logs
-*.log
-```
-
-The template must be adapted to the application technology.
-
----
-
-# 17. Security Baseline
-
-Every repository must integrate with platform security controls.
-
-Required security capabilities:
-
-```text
-Gitleaks
-Trivy
-Checkov
-```
-
-Additional dependency scanning should be enabled where supported.
-
----
-
-# 18. Testing Baseline
-
-Every application must provide automated tests.
-
-Minimum requirement:
-
-```text
+Pull Request
+     |
+     v
+Build
+     |
+     v
 Unit Tests
+     |
+     v
+Secret Scan
+     |
+     v
+Vulnerability Scan
+     |
+     v
+Terraform Validation
+     |
+     v
+Security Checks
+     |
+     v
+Approval
+     |
+     v
+Deployment
 ```
 
-Where applicable:
-
-```text
-Integration Tests
-API Tests
-End-to-End Tests
-```
-
-Tests must execute automatically through CI.
+Reusable workflows should be preferred over duplicating workflow implementation across repositories.
 
 ---
 
-# 19. Infrastructure Baseline
+## 13. Security Requirements
 
-Applications requiring infrastructure must follow:
+Repositories must follow security-by-default principles.
+
+Required controls include:
+
+* Secret scanning
+* Dependency vulnerability scanning
+* Container vulnerability scanning where applicable
+* Infrastructure security scanning
+* No hard-coded credentials
+* Least-privilege access
+* Protected branches
+* CODEOWNERS
+* Pull request review
+* Secure container configuration
+
+Recommended tools include:
+
+* Gitleaks
+* Trivy
+* Checkov
+
+---
+
+## 14. Secrets Management
+
+Secrets must not be stored in:
+
+* Source code
+* Terraform files
+* Dockerfiles
+* Configuration files committed to Git
+* Documentation
+* Repository history
+
+Secrets should be provided through approved mechanisms such as:
+
+* GitHub Actions secrets
+* GitHub Environments
+* AWS Secrets Manager
+* AWS Systems Manager Parameter Store
+
+---
+
+## 15. Infrastructure Standards
+
+Application-specific infrastructure should be placed under:
 
 ```text
 infrastructure/
-├── main.tf
-├── variables.tf
-├── outputs.tf
-└── environments/
-    ├── dev/
-    ├── test/
-    └── prod/
 ```
 
-Reusable infrastructure must be consumed from the platform's Terraform modules.
+Reusable infrastructure capabilities should be provided through the platform Terraform modules.
+
+The repository should not duplicate common platform infrastructure unnecessarily.
+
+Examples of reusable capabilities include:
+
+* Network
+* IAM
+* Container registry
+* Observability
+
+Terraform state files must not be committed.
+
+Terraform dependency lock files should be committed.
 
 ---
 
-# 20. Naming Standards
+## 16. Documentation Standards
 
-Repository and application names must follow organizational naming standards.
+Every application repository should document:
 
-For this capstone repository:
+* Application purpose
+* Architecture
+* Development setup
+* Testing
+* Deployment
+* Infrastructure
+* Security
+* Monitoring
+* Troubleshooting
+* Ownership
+* Support process
+
+Documentation should be maintained together with code changes.
+
+---
+
+## 17. Architecture Documentation
+
+Application architecture should be documented under:
 
 ```text
-group2-advanced
+architecture/
 ```
 
-Application resources should use consistent naming based on:
+Diagrams may use:
+
+* Mermaid
+* Draw.io
+* Other approved diagramming tools
+
+Architecture documentation should identify:
+
+* Application components
+* External dependencies
+* AWS services
+* Network boundaries
+* Data flows
+* Security boundaries
+
+---
+
+## 18. AI Engineering Specifications
+
+Application repositories may contain AI Engineering Specifications under:
 
 ```text
-application
-environment
-resource
+ai-specifications/
+```
+
+Specifications should define:
+
+* Problem
+* Goals
+* Requirements
+* Constraints
+* Security expectations
+* Architecture expectations
+* Validation criteria
+* Definition of Done
+
+AI-generated implementation must be reviewed and validated before acceptance.
+
+AI chat history or prompts are not considered the primary engineering artifact.
+
+---
+
+## 19. Engineering Decisions
+
+Important architecture and engineering decisions should be documented under:
+
+```text
+engineering-decisions/
+```
+
+ADRs should include:
+
+* Context
+* Problem
+* Decision
+* Alternatives
+* Trade-offs
+* Consequences
+* Rationale
+* Status
+
+---
+
+## 20. Developer Experience
+
+The template should provide a predictable developer experience.
+
+A developer should be able to:
+
+1. Create a repository from the standard template.
+2. Understand the repository structure.
+3. Run the application locally.
+4. Run tests.
+5. Build the container.
+6. Submit a pull request.
+7. Receive automated CI/security feedback.
+8. Consume reusable infrastructure modules.
+9. Follow documented deployment procedures.
+
+---
+
+## 21. Environment Standards
+
+Application repositories should support environment separation where required.
+
+Typical environments:
+
+```text
+Development
+Test
+Production
+```
+
+Environment-specific configuration should not be hard-coded into reusable modules or application code.
+
+Production access should have stronger governance and approval controls.
+
+---
+
+## 22. Versioning
+
+The repository template itself must be versioned.
+
+The current version is stored in:
+
+```text
+VERSION
 ```
 
 Example:
 
 ```text
-ims-dev-network
-ims-test-network
+1.0.0
 ```
 
----
-
-# 21. Metadata
-
-The repository should maintain application metadata such as:
+Semantic Versioning must be used:
 
 ```text
-Application Name
-Application Owner
-Platform Owner
-Environment
-Business Criticality
-Technology
-Repository
+MAJOR.MINOR.PATCH
 ```
 
-A simple metadata file may be used:
+Version changes:
 
-```yaml
-application:
-  name: ims
-  owner: inventory-team
-  criticality: medium
-```
-
-The implementation should avoid storing secrets in metadata.
+* MAJOR — breaking template changes
+* MINOR — backward-compatible functionality
+* PATCH — fixes and documentation improvements
 
 ---
 
-# 22. Developer Onboarding
+## 23. Reusability Requirements
 
-A new developer should be able to onboard using:
+The repository template must be usable by multiple application teams without modifying the standard platform structure.
+
+Application-specific customization should occur through:
+
+* Configuration
+* Variables
+* Workflow inputs
+* Environment configuration
+* Application code
+
+Teams should not need to copy and maintain platform implementation independently.
+
+---
+
+## 24. Validation Requirements
+
+The repository template must be validated through automated checks.
+
+Validation should include:
+
+* Required file validation
+* Required directory validation
+* Application tests
+* Docker build
+* Security checks where applicable
+* CI workflow validation
+
+The platform repository contains:
 
 ```text
-Clone Repository
-      ↓
-Read README
-      ↓
-Install Dependencies
-      ↓
-Run Tests
-      ↓
-Run Application
-      ↓
-Build Docker Image
-      ↓
-Run Security Checks
+.github/workflows/template-validation.yml
 ```
 
-The onboarding process should not require undocumented manual platform configuration.
+to validate the repository template.
 
 ---
 
-# 23. Local Development
+## 25. Governance Requirements
 
-The README must document the required tools.
+The template must align with platform governance standards.
 
-Example:
+Governance includes:
 
-```text
-Git
-Docker
-Terraform
-Application Runtime
-Security Tools
-```
-
-The exact requirements depend on the application technology.
-
----
-
-# 24. Local Validation
-
-Developers should be able to run appropriate checks locally before creating a pull request.
-
-Example:
-
-```bash
-terraform fmt -check -recursive
-terraform validate
-checkov -d infrastructure
-trivy fs .
-gitleaks detect
-```
-
-The exact commands may vary according to the application.
+* Branch protection
+* Pull request reviews
+* CODEOWNERS
+* Required CI checks
+* Security scanning
+* Secret management
+* Infrastructure standards
+* Dependency management
+* Exception handling
+* Auditability
 
 ---
 
-# 25. Repository Template Parameters
+## 26. Definition of Done
 
-The repository template should support configurable parameters such as:
+The repository template is considered complete when:
 
-```text
-Application Name
-Application Description
-Programming Language
-Application Team
-Application Owner
-Environment
-Container Required
-Terraform Required
-Deployment Target
-```
-
-The template must use configuration rather than requiring developers to manually modify large numbers of files.
-
----
-
-# 26. Template Customization
-
-Customization must be limited to defined configuration points.
-
-Examples:
-
-```text
-Application Name
-Language
-Runtime
-Port
-Team
-Deployment Target
-```
-
-Platform security and governance controls must not be easily disabled through normal template configuration.
+* [ ] Standard repository structure is implemented.
+* [ ] README is provided.
+* [ ] Application example is provided.
+* [ ] Automated tests are provided.
+* [ ] Dockerfile is provided.
+* [ ] `.dockerignore` is provided.
+* [ ] `.gitignore` is provided.
+* [ ] LICENSE is provided.
+* [ ] VERSION is provided.
+* [ ] CODEOWNERS is provided.
+* [ ] Pull request template is provided.
+* [ ] Security documentation is provided.
+* [ ] AI Engineering Specification directory is provided.
+* [ ] Engineering Decision directory is provided.
+* [ ] Infrastructure directory is provided.
+* [ ] CI/CD integration is provided.
+* [ ] Template validation is automated.
+* [ ] Terraform lock files are retained when Terraform is used.
+* [ ] Security requirements are documented.
+* [ ] Developer onboarding requirements are documented.
 
 ---
 
-# 27. Versioning
+## 27. Acceptance Criteria
 
-The repository template must be versioned.
+The repository template must:
 
-Example:
-
-```text
-template-v1
-template-v2
-```
-
-Breaking template changes require a new major version.
-
-Existing application repositories should not be unexpectedly modified when a new template version is released.
-
----
-
-# 28. Acceptance Criteria
-
-### AC-001
-
-A new application can be created using the standard repository template.
-
-### AC-002
-
-The repository contains the required standard directories.
-
-### AC-003
-
-README documentation is present.
-
-### AC-004
-
-Automated testing is available.
-
-### AC-005
-
-CI/CD integration is configured.
-
-### AC-006
-
-Gitleaks is integrated.
-
-### AC-007
-
-Trivy is integrated.
-
-### AC-008
-
-Checkov is integrated when Terraform is used.
-
-### AC-009
-
-No secrets are stored in the repository.
-
-### AC-010
-
-Docker configuration is available for containerized applications.
-
-### AC-011
-
-Applications consume reusable Terraform modules.
-
-### AC-012
-
-Applications consume reusable GitHub Actions workflows.
-
-### AC-013
-
-Developer onboarding instructions are documented.
-
-### AC-014
-
-The template can support multiple application teams.
+1. Provide a consistent structure for application teams.
+2. Reduce repository setup effort.
+3. Support reusable CI/CD workflows.
+4. Support reusable Terraform modules.
+5. Include security controls.
+6. Include governance controls.
+7. Include documentation standards.
+8. Support automated testing.
+9. Support containerized applications.
+10. Support AI Engineering Specifications.
+11. Support engineering decision records.
+12. Provide template versioning.
+13. Be validated automatically.
+14. Avoid hard-coded secrets.
+15. Keep Terraform dependency lock files under version control.
 
 ---
 
-# 29. Definition of Done
+## 28. Expected Outcome
 
-The repository template is complete when:
+The repository template provides a standardized starting point for application teams.
 
-* Standard repository structure is implemented.
-* Required documentation is available.
-* CI/CD integration is implemented.
-* Security scanning is integrated.
-* Testing structure is provided.
-* Docker support is available where required.
-* Terraform structure is available where required.
-* Reusable platform components are consumed rather than copied.
-* Developer onboarding is documented.
-* Template versioning is defined.
-* IMS can be created/onboarded using the standard structure.
-* A second sample application can use the same template.
+It enables:
+
+* Faster onboarding
+* Consistent repository structures
+* Reusable CI/CD
+* Reusable infrastructure
+* Standard security controls
+* Consistent governance
+* Better developer experience
+* Reduced platform duplication
+* Easier maintenance
+
+The template is a core capability of the Acme Retail Internal Developer Platform.
