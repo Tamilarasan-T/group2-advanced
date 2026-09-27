@@ -1,45 +1,22 @@
 # Container Terraform Module
 
-## Overview
-
-This module provides a reusable and secure AWS container registry capability using Amazon ECR.
-
-The module is designed for platform-level reuse across multiple application teams and environments.
+Reusable AWS ECR module for application teams and environments.
 
 ## Capabilities
 
-The module provides:
-
-- Amazon ECR repository
+- ECR repository
 - Immutable image tags
 - Image scanning on push
-- KMS encryption
-- Automatic KMS key rotation
-- ECR lifecycle management
-- Secure-by-default configuration
-- Standard resource tagging
-
-## Security Standards
-
-The module follows these security principles:
-
-- ECR images are encrypted using AWS KMS.
-- KMS key rotation is enabled.
-- Image scanning is enabled on push.
-- Image tags are immutable.
-- Repository deletion is protected by default.
-- Untagged images are automatically cleaned up.
-- No public ECR repository configuration is created.
-- No credentials or secrets are stored in Terraform.
-- Resource tags are standardized.
+- KMS encryption and rotation
+- Lifecycle management
+- Secure defaults
+- Standard tagging
 
 ## Usage
 
-Example:
-
+```hcl
 module "container" {
-  source = "../../modules/container"
-
+  source      = "../../modules/container"
   name        = "orders-api"
   environment = "dev"
 
@@ -48,62 +25,45 @@ module "container" {
     CostCenter = "Engineering"
   }
 }
+````
 
-## Lifecycle Policy
+## Security
 
-The default lifecycle policy:
+* KMS encryption with key rotation
+* Image scanning
+* Immutable tags
+* No public repository configuration
+* No credentials in Terraform
+* Protected repository deletion
+* Standard resource tags
 
-* Removes untagged images older than 7 days.
-* Keeps the latest 30 images using version tags beginning with `v`.
+## Lifecycle
 
-## Inputs
-
-| Name         | Description                              | Type        | Default  |
-| ------------ | ---------------------------------------- | ----------- | -------- |
-| name         | Application or platform name             | string      | Required |
-| environment  | Deployment environment                   | string      | Required |
-| force_delete | Delete repository even when images exist | bool        | false    |
-| tags         | Additional resource tags                 | map(string) | {}       |
-
-## Outputs
-
-| Output          | Description             |
-| --------------- | ----------------------- |
-| repository_name | ECR repository name     |
-| repository_arn  | ECR repository ARN      |
-| repository_url  | ECR repository URL      |
-| registry_id     | AWS account registry ID |
-| kms_key_arn     | KMS key ARN             |
+* Untagged images removed after 7 days.
+* Latest 30 version-tagged images retained.
 
 ## Validation
 
-The module must pass:
-
-1. Terraform formatting
-2. Terraform initialization
-3. Terraform validation
-4. Checkov security scanning
+```text
+terraform fmt
+terraform init -backend=false
+terraform validate
+Checkov
+```
 
 ## Reusability
 
-The module is designed to support multiple application teams without modifying the module implementation.
+The same module can create isolated ECR repositories for multiple applications such as:
 
-Example consumers:
+```text
+orders-api
+payments-api
+customer-api
+```
 
-* orders-api
-* payments-api
-* customer-api
+## Requirements
 
-Each application can create an isolated ECR repository using the same module.
-
-## Definition of Done
-
-* ECR repository created
-* Immutable image tags enabled
-* Image scanning enabled
-* KMS encryption enabled
-* KMS rotation enabled
-* Lifecycle policy configured
-* Terraform validation passes
-* Checkov validation passes
-* Documentation completed
+| Tool         | Version       |
+| ------------ | ------------- |
+| Terraform    | >= 1.6        |
+| AWS Provider | >= 5.0, < 7.0 |
