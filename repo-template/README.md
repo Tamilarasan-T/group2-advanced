@@ -1,36 +1,15 @@
 # Application Repository Template
 
-## Overview
+Standard repository structure for application teams using the Acme Retail Internal Developer Platform.
 
-This repository provides the standard starting structure for application teams using the Acme Retail Internal Developer Platform.
+## Structure
 
-The template provides standardized application development, testing, security, infrastructure, documentation, and governance conventions.
-
-## Repository Structure
-
-app/
-    Application source code
-
-tests/
-    Automated tests
-
-infrastructure/
-    Terraform infrastructure
-
-docs/
-    Application and operational documentation
-
-architecture/
-    Architecture diagrams and documentation
-
-ai-specifications/
-    AI Engineering Specifications
-
-engineering-decisions/
-    Architecture Decision Records
-
-.github/
-    GitHub Actions and repository governance
-
-Dockerfile
-    Standard container build definition
+app/                    Application code
+tests/                  Automated tests
+infrastructure/        Terraform infrastructure
+docs/                   Documentation
+architecture/           Architecture documentation
+ai-specifications/      AI Engineering Specifications
+engineering-decisions/  Architecture Decision Records
+.github/                CI/CD and governance
+Dockerfile              Container build definition
