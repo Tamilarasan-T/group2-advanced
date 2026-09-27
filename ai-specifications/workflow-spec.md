@@ -2,378 +2,314 @@
 
 ## 1. Document Information
 
-| Field         | Value                                   |
-| ------------- | --------------------------------------- |
-| Specification | Reusable CI/CD and DevSecOps Workflows  |
-| Version       | 1.0                                     |
-| Status        | Approved                                |
-| Platform      | Acme Retail Internal Developer Platform |
-| CI/CD         | GitHub Actions                          |
-| Security      | Gitleaks, Trivy, Checkov                |
-| Container     | Docker                                  |
-| IaC           | Terraform                               |
+| Field | Value |
+|---|---|
+| Specification | Reusable CI/CD and DevSecOps Workflows |
+| Version | 1.0 |
+| Status | Approved |
+| Platform | Acme Retail Internal Developer Platform |
+| CI/CD | GitHub Actions |
+| Security | Gitleaks, Trivy, Checkov |
+| Container | Docker |
+| IaC | Terraform |
 
 ---
 
-# 2. Purpose
+## 2. Purpose
 
-This specification defines reusable GitHub Actions workflows for the Acme Retail Internal Developer Platform.
+Define reusable GitHub Actions workflows that standardize CI/CD, security validation and Terraform validation across application repositories.
 
-The objective is to eliminate duplicated CI/CD pipeline implementations across application repositories and establish a standardized, secure, maintainable software delivery process.
-
-Application teams must consume reusable workflows rather than independently copying and maintaining complete CI/CD pipeline implementations.
+Application teams should consume reusable workflows instead of duplicating complete pipeline implementations.
 
 ---
 
-# 3. Business Problem
+## 3. Business Problem
 
-Acme Retail application teams currently maintain separate CI/CD pipelines.
+Independent application pipelines can create:
 
-This creates:
+- Duplicate workflow code
+- Inconsistent build and testing processes
+- Inconsistent security scanning
+- Different infrastructure validation
+- Higher maintenance effort
+- Longer onboarding
 
-* Duplicate workflow code
-* Different build processes
-* Inconsistent security scanning
-* Different testing approaches
-* Difficult pipeline maintenance
-* Inconsistent deployment processes
-* Increased onboarding time
-* Security and compliance gaps
-
-The platform will provide centrally maintained reusable workflows.
+The platform provides centrally maintained reusable workflow capabilities.
 
 ---
 
-# 4. Goals
+## 4. Goals
 
 The workflow platform must:
 
-1. Provide reusable GitHub Actions workflows.
-2. Standardize CI/CD across applications.
-3. Integrate security scanning.
-4. Integrate Terraform validation.
-5. Support Docker image building.
-6. Provide clear pipeline failures.
-7. Minimize application-specific workflow code.
-8. Support multiple application teams.
-9. Use secure GitHub Actions practices.
-10. Support local/static workflow validation.
-11. Support versioning.
-12. Prevent secrets from being exposed in logs.
+- Standardize CI/CD.
+- Provide reusable GitHub Actions workflows.
+- Integrate security scanning.
+- Validate Terraform infrastructure.
+- Support Docker image workflows.
+- Provide clear pipeline failures.
+- Minimize application-specific workflow code.
+- Support multiple application teams.
+- Follow least-privilege security practices.
+- Protect secrets.
+- Support controlled workflow versioning.
 
 ---
 
-# 5. Non-Goals
+## 5. Non-Goals
 
-The initial implementation will not:
+The platform does not:
 
-* Build a custom CI/CD platform.
-* Replace GitHub Actions.
-* Allow arbitrary privileged workflow execution.
-* Store credentials directly in workflow files.
-* Automatically deploy every application to production without approval.
-* Implement every programming language or framework.
-
----
-
-# 6. Workflow Architecture
-
-The platform should provide reusable workflows for major delivery stages.
-
-.github/
-└── workflows/
-    ├── reusable-ci.yml
-    ├── reusable-security.yml
-    ├── reusable-terraform.yml
-    ├── platform-ci.yml
-    ├── terraform-validate.yml
-    ├── terraform-consumer-validation.yml
-    └── template-validation.yml
-
-Where practical, reusable workflows should be implemented using GitHub Actions reusable workflow functionality.
+- Replace GitHub Actions.
+- Store credentials in workflow source.
+- Automatically deploy all applications to production.
+- Allow arbitrary privileged workflow execution.
+- Implement every programming language or framework.
 
 ---
 
-# 7. Standard Pipeline
+## 6. Implemented Workflows
 
-The standard application pipeline should follow:
+The repository currently provides:
+
+```text
+.github/workflows/
+├── reusable-ci.yml
+├── reusable-security.yml
+├── reusable-terraform.yml
+├── platform-ci.yml
+├── terraform-validate.yml
+├── terraform-consumer-validation.yml
+└── template-validation.yml
+````
+
+### Reusable CI
+
+`reusable-ci.yml`
+
+Provides:
+
+* Runtime setup
+* Dependency installation
+* Application tests
+* Standard CI execution
+
+### Reusable Security
+
+`reusable-security.yml`
+
+Provides:
+
+* Gitleaks secret scanning
+* Trivy filesystem scanning
+* Conditional Trivy container image scanning
+
+### Reusable Terraform
+
+`reusable-terraform.yml`
+
+Provides:
+
+* Terraform format validation
+* Terraform initialization
+* Terraform validation
+* Checkov scanning
+
+### Platform CI
+
+`platform-ci.yml`
+
+Composes reusable CI, security and Terraform validation for the platform repository.
+
+---
+
+## 7. Standard Pipeline
+
+The standard delivery flow is:
 
 ```text
 Pull Request
-     │
-     ▼
-Checkout
-     │
-     ▼
-Build
-     │
-     ▼
-Unit Tests
-     │
-     ▼
+     |
+     v
+Build & Test
+     |
+     v
 Gitleaks
-     │
-     ▼
+     |
+     v
 Trivy
-     │
-     ▼
+     |
+     v
+Terraform Validation
+     |
+     v
 Checkov
-     │
-     ▼
-Terraform Validate
-     │
-     ▼
+     |
+     v
 Docker Build
-     │
-     ▼
+     |
+     v
 Image Scan
-     │
-     ▼
-Review / Approval
-     │
-     ▼
+     |
+     v
+Approval
+     |
+     v
 Deployment
 ```
-Not every stage must execute for every repository type.
 
-Docker image building and container image scanning are conditional capabilities.
+Not every repository requires every stage.
 
-They must be enabled for repositories that build container images. The container image must be built before the image vulnerability scan is executed.
-
-Repositories that do not build a container image may skip the Docker Build and Image Scan stages.
-
-Workflow inputs should determine which capabilities are required.
+Docker build and container image scanning are conditional capabilities and should run only for repositories that build container images.
 
 ---
 
-# 8. CI Workflow
-
-## Purpose
-
-Provide standardized application build and test execution.
+## 8. CI Requirements
 
 The CI workflow should:
 
 1. Checkout source code.
 2. Set up the required runtime.
 3. Install dependencies.
-4. Build the application.
-5. Execute unit tests.
-6. Publish test results where appropriate.
+4. Run application tests.
+5. Fail when required tests fail.
 
-Example interface:
-
-```yaml
-jobs:
-  ci:
-    uses: organization/platform-workflows/.github/workflows/ci.yml@v1
-    with:
-      language: python
-      run_tests: true
-```
-
-The actual implementation must be adapted to the selected repository architecture.
+Application-specific workflow logic should remain minimal.
 
 ---
 
-# 9. Security Workflow
+## 9. Security Requirements
 
-The security workflow must provide standardized security checks.
+The security workflow must support:
 
-Required tools:
+* Gitleaks
+* Trivy
+* Checkov
 
-```text
-Gitleaks
-Trivy
-Checkov
-```
+Security failures must not be hidden.
 
-The workflow should perform:
-
-```text
-Source
-  │
-  ├── Gitleaks
-  │
-  ├── Trivy filesystem scan
-  │
-  └── Checkov
-```
-
-Container scanning should occur after the Docker image has been built.
-
----
-
-# 10. Gitleaks Requirements
+### Gitleaks
 
 Gitleaks must detect accidentally committed secrets.
 
-It should scan:
+The workflow must:
 
-* Source code
-* Configuration files
-* Git history where appropriate
+* Scan repository content.
+* Fail when a confirmed secret is detected.
+* Avoid exposing secrets in logs.
+* Use reviewed allowlists for approved false positives.
 
-The workflow must fail when a confirmed secret is detected according to the platform security policy.
+### Trivy
 
-Secrets must never be printed in workflow logs.
-
-False positives must be handled through an explicit reviewed allowlist mechanism rather than disabling the scanner.
-
----
-
-# 11. Trivy Requirements
-
-Trivy must be used for vulnerability scanning.
-
-The platform should support:
+Trivy should support:
 
 * Filesystem scanning
 * Container image scanning
-* Configuration scanning where appropriate
+* Configuration scanning where applicable
 
-Example:
+High/Critical vulnerabilities should be handled according to platform security policy.
 
-```text
-Docker Build
-     ↓
-Trivy Image Scan
-     ↓
-Security Policy
-     ↓
-Pass / Fail
-```
+### Checkov
 
-Severity thresholds must be configurable by platform governance.
+Checkov must scan Terraform infrastructure for security and compliance issues.
 
-Critical vulnerabilities should fail the pipeline unless an approved exception exists.
+Approved exceptions must be documented and reviewed.
 
 ---
 
-# 12. Checkov Requirements
-
-Checkov must scan Terraform infrastructure.
-
-Example:
-
-```text
-Terraform
-    ↓
-Checkov
-    ↓
-Security Findings
-    ↓
-Policy Evaluation
-```
-
-Checkov must execute before infrastructure changes are approved for deployment.
-
-Security exceptions must be documented and reviewed.
-
----
-
-# 13. Docker Build Requirements
+## 10. Docker Requirements
 
 Container builds must:
 
 * Use a defined Dockerfile.
-* Avoid embedding secrets.
+* Avoid embedded secrets.
 * Prefer minimal base images.
 * Use deterministic dependencies where practical.
 * Run as a non-root user where practical.
 * Be scanned before deployment.
 
-The workflow should tag images using immutable identifiers such as the Git commit SHA.
+Production images should use immutable identifiers such as the Git commit SHA.
 
-Example:
-
-```text
-ims:<commit-sha>
-```
-
-The use of only mutable tags such as `latest` should not be relied upon for production deployment.
+Mutable tags such as `latest` should not be relied upon for production deployment.
 
 ---
 
-# 14. Terraform Workflow
+## 11. Terraform Requirements
 
-The Terraform workflow must perform:
+Terraform validation must include:
 
 ```text
 terraform fmt -check
-        ↓
+        |
+        v
 terraform init
-        ↓
+        |
+        v
 terraform validate
-        ↓
+        |
+        v
 Checkov
-        ↓
-terraform plan
 ```
+
+Production Terraform changes must require appropriate authorization.
 
 Terraform plan output must not expose secrets.
 
-Production apply must require appropriate authorization.
-
 ---
 
-# 15. Pull Request Workflow
+## 12. Pull Request Requirements
 
 Pull requests must execute required validation before merging.
 
-Minimum checks:
+Required checks should include, where applicable:
 
-```text
-Build
-Unit Tests
-Gitleaks
-Trivy
-Checkov
-Terraform Validation
-```
+* Build
+* Unit Tests
+* Gitleaks
+* Trivy
+* Terraform validation
+* Checkov
 
-Branch protection should require relevant checks to pass before merging.
+Branch protection must require relevant checks to pass before merging.
 
 ---
 
-# 16. Deployment Workflow
+## 13. Deployment Requirements
 
-The deployment workflow must separate:
+Production deployment should follow:
 
 ```text
 Build
-  ↓
+  |
 Validation
-  ↓
+  |
 Security
-  ↓
+  |
 Artifact
-  ↓
+  |
 Approval
-  ↓
+  |
 Deployment
 ```
 
-Production deployments must require an explicit approval mechanism.
+Production deployments must use an explicit approval mechanism.
 
-The workflow must not automatically deploy unvalidated code.
+Unvalidated code must not be automatically deployed to production.
 
 ---
 
-# 17. Permissions
+## 14. Permissions
 
-GitHub Actions workflows must follow least privilege.
+Workflows must follow least privilege.
 
-Workflows should explicitly define permissions.
-
-Example:
+Default example:
 
 ```yaml
 permissions:
   contents: read
 ```
 
-Additional permissions must only be granted when required.
+Additional permissions should only be granted when required.
 
 Avoid:
 
@@ -385,41 +321,40 @@ unless there is a documented requirement.
 
 ---
 
-# 18. Secret Management
+## 15. Secret Management
 
 Secrets must not be stored in:
 
 * Workflow source
-* Repository source code
+* Application source
 * Dockerfiles
 * Terraform files
 * Logs
 
-GitHub Actions secrets or an appropriate external secret-management mechanism must be used.
+Approved mechanisms include:
+
+* GitHub Actions secrets
+* GitHub Environments
+* AWS Secrets Manager
+* AWS Systems Manager Parameter Store
 
 Secrets must not be passed to steps unnecessarily.
 
 ---
 
-# 19. Action Pinning
+## 16. Action Pinning
 
-Third-party GitHub Actions should be pinned to trusted versions.
+GitHub Actions should use trusted, controlled versions.
 
-Where organizational policy requires stronger supply-chain controls, actions should be pinned to immutable commit SHAs.
-
-Example:
-
-```yaml
-uses: actions/checkout@<trusted-version-or-commit>
-```
+Where stronger supply-chain controls are required, actions should be pinned to immutable commit SHAs.
 
 The platform should maintain an approved action list where practical.
 
 ---
 
-# 20. Concurrency
+## 17. Concurrency
 
-Workflows should use concurrency controls where appropriate to prevent unnecessary duplicate executions.
+Reusable workflows should use concurrency controls where appropriate.
 
 Example:
 
@@ -429,34 +364,11 @@ concurrency:
   cancel-in-progress: true
 ```
 
-Production deployment workflows must use additional safeguards where cancellation could create inconsistent deployment states.
+Production deployment workflows should use additional safeguards where cancellation could cause an inconsistent deployment.
 
 ---
 
-# 21. Dependency Management
-
-Application dependencies should be managed using the native package manager of the application language.
-
-Where supported, dependency vulnerability scanning should be included in CI.
-
-Dependencies should use lock files where the ecosystem supports them.
-
----
-
-# 22. Artifact Management
-
-Build artifacts should be:
-
-* Clearly named
-* Versioned
-* Traceable to a Git commit
-* Retained according to organizational policy
-
-Container images should use immutable identifiers.
-
----
-
-# 23. Workflow Inputs
+## 18. Workflow Inputs
 
 Reusable workflows should expose only required inputs.
 
@@ -466,10 +378,6 @@ Example:
 workflow_call:
   inputs:
     application_name:
-      required: true
-      type: string
-
-    language:
       required: true
       type: string
 
@@ -483,50 +391,31 @@ Inputs must have documented defaults and expected values.
 
 ---
 
-# 24. Workflow Outputs
-
-Reusable workflows should expose useful outputs where required.
-
-Examples:
-
-```text
-image_tag
-artifact_name
-terraform_plan_status
-security_scan_status
-```
-
-Outputs must not contain secrets.
-
----
-
-# 25. Failure Handling
+## 19. Failure Handling
 
 Pipeline failures must provide actionable information.
 
-A failure should identify:
+Failures should identify:
 
 * Failed stage
 * Failed tool
 * Relevant error
 * Recommended remediation where practical
 
-The workflow must not hide security failures.
+Security failures must not be hidden.
 
 ---
 
-# 26. Security Failure Policy
+## 20. Security Failure Policy
 
-The default security policy should be:
+Default security handling:
 
 ```text
 Critical → Fail
-High     → Fail where policy requires
+High     → Fail according to policy
 Medium   → Report / policy dependent
 Low      → Report
 ```
-
-Exact severity thresholds must be governed centrally.
 
 Approved exceptions must include:
 
@@ -540,49 +429,51 @@ Permanent unexplained security exceptions are not permitted.
 
 ---
 
-# 27. Reusability Model
+## 21. Reusability
 
-Application repositories should contain minimal workflow logic.
+Application repositories should contain minimal workflow implementation.
 
-Example:
+Reusable workflows should provide common:
 
-```yaml
-name: Application CI
+* CI
+* Security
+* Terraform
+* Container
+* Deployment
 
-on:
-  pull_request:
+capabilities.
 
-jobs:
-  ci:
-    uses: organization/platform-workflows/.github/workflows/ci.yml@v1
-    with:
-      application_name: ims
-      language: python
-```
-
-The application repository should not duplicate the complete CI implementation.
+Application repositories should consume platform workflows rather than copy their complete implementation.
 
 ---
 
-# 28. Versioning
+## 22. Versioning
 
-Reusable workflows must be versioned and changes must be managed in a controlled manner.
+Reusable workflows must be version controlled.
 
-For centrally hosted reusable workflow repositories, application repositories should consume an approved version or immutable reference.
+For centrally hosted reusable workflows:
 
-Example:
+```text
 v1
 v1.1
 v1.2
 v2
+```
 
 Breaking changes require a new major version.
 
-Application repositories should pin to an approved version rather than automatically consuming uncontrolled changes.
+For workflows maintained in the same repository, changes are controlled through:
+
+* Git history
+* Pull requests
+* Code review
+* Protected branches
+
+Applications should consume approved workflow versions or references.
 
 ---
 
-# 29. Workflow Security
+## 23. Workflow Security
 
 Workflows must protect against:
 
@@ -593,34 +484,32 @@ Workflows must protect against:
 * Malicious action changes
 * Artifact tampering
 
-Workflows triggered by forked pull requests must receive particular attention because repository secrets must not be exposed to untrusted code.
+Fork-based pull requests must not receive access to sensitive repository secrets.
 
 ---
 
-# 30. Local Validation
+## 24. Validation
 
-Where practical, workflow configuration should be statically validated before pushing.
+Workflow configuration should be validated through:
 
-Recommended validation includes:
-
-* YAML syntax validation
-* GitHub Actions workflow linting
+* YAML validation
+* GitHub Actions workflow validation
 * Terraform validation
 * Security scanning
-* Dockerfile validation
+* Docker validation where applicable
 
-GitHub Actions execution should be used for final integration validation when available.
+GitHub Actions execution provides final integration validation.
 
 ---
 
-# 31. Observability
+## 25. Observability
 
 Workflow execution should provide:
 
 * Clear job names
 * Clear step names
 * Useful logs
-* Security scan results
+* Security results
 * Test results
 * Deployment status
 
@@ -628,81 +517,42 @@ Sensitive values must be masked.
 
 ---
 
-# 32. Acceptance Criteria
+## 26. Acceptance Criteria
 
-### AC-001
+The workflow platform is accepted when:
 
-Application repositories can consume reusable workflows.
-
-### AC-002
-
-Application repositories do not duplicate the complete CI/CD implementation.
-
-### AC-003
-
-Gitleaks executes automatically.
-
-### AC-004
-
-Trivy executes automatically.
-
-### AC-005
-
-Checkov executes automatically for Terraform.
-
-### AC-006
-
-Terraform formatting and validation execute automatically.
-
-### AC-007
-
-Docker images are scanned before deployment.
-
-### AC-008
-
-Production deployment requires appropriate approval.
-
-### AC-009
-
-Workflow permissions follow least privilege.
-
-### AC-010
-
-Secrets are not stored in workflow source code.
-
-### AC-011
-
-Reusable workflows are versioned.
-
-### AC-012
-
-Security failures can block the pipeline.
-
-### AC-013
-
-Pipeline failures provide actionable information.
-
-### AC-014
-
-The same workflows can support multiple applications.
+* [ ] Application repositories can consume reusable workflows.
+* [ ] Complete CI/CD implementation is not duplicated.
+* [ ] Gitleaks is integrated.
+* [ ] Trivy is integrated.
+* [ ] Checkov is integrated for Terraform.
+* [ ] Terraform formatting and validation are automated.
+* [ ] Container images can be scanned where applicable.
+* [ ] Production deployment has appropriate approval.
+* [ ] Workflow permissions follow least privilege.
+* [ ] Secrets are not stored in workflow source.
+* [ ] Workflows are version controlled.
+* [ ] Security failures can block pipelines.
+* [ ] Pipeline failures provide useful information.
+* [ ] Multiple applications can consume the same workflow capabilities.
 
 ---
 
-# 33. Definition of Done
+## 27. Definition of Done
 
-The workflow platform capability is complete when:
+The workflow platform is complete when:
 
-* Reusable workflows are implemented.
-* Application teams can consume them.
-* CI and testing are standardized.
-* Gitleaks is integrated.
-* Trivy is integrated.
-* Checkov is integrated.
-* Terraform validation is integrated.
-* Docker images are scanned.
-* Security policies are enforced.
+* Reusable CI workflow is implemented.
+* Reusable security workflow is implemented.
+* Reusable Terraform workflow is implemented.
+* Platform CI consumes the reusable workflows.
+* Gitleaks is operational.
+* Trivy is operational.
+* Checkov is operational.
+* Terraform validation is automated.
 * Workflow permissions are minimized.
-* Workflow versions are defined.
-* Orders API successfully consumes the reusable workflows.
-* Payments API successfully consumes the same reusable workflows.
+* Workflow versioning is defined.
+* Orders API can consume the reusable capabilities.
+* Payments API can consume the same capabilities.
 * Documentation is complete.
+* Validation evidence is available.
