@@ -1,0 +1,10 @@
+# Default repository owners
+* @Tamilarasan-T
+
+# Platform and infrastructure changes
+/infrastructure/ @Tamilarasan-T
+/.github/ @Tamilarasan-T
+/ai-specifications/ @Tamilarasan-T
+/governance/ @Tamilarasan-T
+/architecture/ @Tamilarasan-T
+/engineering-decisions/ @Tamilarasan-T
