@@ -1,1 +1,13 @@
-1.0.0
+## Template Version
+
+Current template version:
+
+`1.0.0`
+
+The repository template follows semantic versioning:
+
+- **Major** — breaking template changes
+- **Minor** — backward-compatible features
+- **Patch** — backward-compatible fixes
+
+Application teams should record the template version used when creating a new repository.
