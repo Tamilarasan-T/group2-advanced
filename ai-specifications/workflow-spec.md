@@ -6,7 +6,7 @@
 | ------------- | --------------------------------------- |
 | Specification | Reusable CI/CD and DevSecOps Workflows  |
 | Version       | 1.0                                     |
-| Status        | Draft                                   |
+| Status        | Approved                                |
 | Platform      | Acme Retail Internal Developer Platform |
 | CI/CD         | GitHub Actions                          |
 | Security      | Gitleaks, Trivy, Checkov                |
@@ -80,14 +80,15 @@ The initial implementation will not:
 
 The platform should provide reusable workflows for major delivery stages.
 
-```text id="a7v2jw"
 .github/
 └── workflows/
-    ├── ci.yml
-    ├── security.yml
-    ├── terraform.yml
-    └── release.yml
-```
+    ├── reusable-ci.yml
+    ├── reusable-security.yml
+    ├── reusable-terraform.yml
+    ├── platform-ci.yml
+    ├── terraform-validate.yml
+    ├── terraform-consumer-validation.yml
+    └── template-validation.yml
 
 Where practical, reusable workflows should be implemented using GitHub Actions reusable workflow functionality.
 
@@ -133,8 +134,13 @@ Review / Approval
      ▼
 Deployment
 ```
-
 Not every stage must execute for every repository type.
+
+Docker image building and container image scanning are conditional capabilities.
+
+They must be enabled for repositories that build container images. The container image must be built before the image vulnerability scan is executed.
+
+Repositories that do not build a container image may skip the Docker Build and Image Scan stages.
 
 Workflow inputs should determine which capabilities are required.
 
@@ -560,16 +566,15 @@ The application repository should not duplicate the complete CI implementation.
 
 # 28. Versioning
 
-Reusable workflows must be versioned.
+Reusable workflows must be versioned and changes must be managed in a controlled manner.
+
+For centrally hosted reusable workflow repositories, application repositories should consume an approved version or immutable reference.
 
 Example:
-
-```text
 v1
 v1.1
 v1.2
 v2
-```
 
 Breaking changes require a new major version.
 
@@ -698,6 +703,6 @@ The workflow platform capability is complete when:
 * Security policies are enforced.
 * Workflow permissions are minimized.
 * Workflow versions are defined.
-* IMS successfully consumes the workflows.
-* A second application successfully consumes the same workflows.
+* Orders API successfully consumes the reusable workflows.
+* Payments API successfully consumes the same reusable workflows.
 * Documentation is complete.
