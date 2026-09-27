@@ -2,240 +2,86 @@
 
 ## Purpose
 
-This document defines the support model for application teams consuming the Acme Retail Internal Developer Platform.
+Define ownership, troubleshooting and escalation for teams using the Acme Retail Internal Developer Platform.
 
-The objective is to provide clear ownership, escalation paths, and support expectations while maintaining a self-service platform.
+## Ownership
 
-## Support Principles
-
-The platform support model follows these principles:
-
-- Self-service first
-- Clear ownership
-- Standardized troubleshooting
-- Fast incident escalation
-- Documented operational procedures
-- Reusable solutions
-- Continuous improvement
-
-## Ownership Model
-
-### Application Team
-
-The application team owns:
-
-- Application source code
-- Application configuration
-- Application-specific dependencies
-- Application-specific tests
-- Application behavior
-- Application-specific infrastructure configuration
-- Application-level monitoring requirements
-
-### Platform Engineering
-
-Platform Engineering owns:
-
-- Terraform modules
-- Reusable GitHub Actions workflows
-- Repository templates
-- Platform standards
-- Developer experience documentation
-- Platform security controls
-- Platform infrastructure capabilities
-
-### Security Team
-
-Security owns or provides guidance for:
-
-- Security policies
-- Vulnerability management
-- Security exceptions
-- Security incidents
-- Security compliance requirements
-- Security tooling standards
-
-### Infrastructure / Cloud Team
-
-The Infrastructure or Cloud team supports:
-
-- Cloud account configuration
-- Shared networking
-- Cloud platform services
-- Organization-level infrastructure
-- Cloud governance
+| Area | Owner |
+|---|---|
+| Application code/configuration | Application Team |
+| Terraform modules | Platform Engineering |
+| Reusable workflows | Platform Engineering |
+| Repository templates | Platform Engineering |
+| Platform security | Platform / Security |
+| Security incidents | Security Team |
+| Cloud/shared infrastructure | Infrastructure / Cloud Team |
 
 ## Support Categories
 
-### Category 1 — Application Issue
-
-Examples:
-
-- Application error
-- Application configuration issue
-- Application test failure
-- Application dependency problem
-
-**Primary owner:** Application Team
-
-### Category 2 — Platform Workflow Issue
-
-Examples:
-
-- Reusable CI failure
-- Reusable security workflow failure
-- Reusable Terraform workflow failure
-
-**Primary owner:** Platform Engineering
-
-### Category 3 — Terraform Module Issue
-
-Examples:
-
-- Network module failure
-- IAM module failure
-- Container module failure
-- Observability module failure
-
-**Primary owner:** Platform Engineering
-
-### Category 4 — Security Issue
-
-Examples:
-
-- Secret detected
-- Critical vulnerability
-- IAM security issue
-- Security policy violation
-
-**Primary owner:** Security Team with Application or Platform Engineering support as applicable
-
-### Category 5 — Cloud Infrastructure Issue
-
-Examples:
-
-- AWS service issue
-- Network connectivity problem
-- Cloud resource availability issue
-- Account-level configuration issue
-
-**Primary owner:** Infrastructure / Cloud Team
+- **Application issues** → Application Team
+- **Workflow/module issues** → Platform Engineering
+- **Security issues** → Security Team
+- **Cloud infrastructure issues** → Infrastructure / Cloud Team
 
 ## Self-Service Troubleshooting
 
-Before raising a support request, application teams should check:
+Before escalation, check:
 
-1. Repository documentation.
-2. Workflow logs.
-3. Terraform validation output.
-4. Security scan results.
-5. Known issues.
-6. Platform documentation.
-7. Recent platform changes.
+1. Repository documentation
+2. Workflow logs
+3. Terraform output
+4. Security scan results
+5. Recent changes
+6. Known issues
 
-## Common Troubleshooting
+## Common Failures
 
-### CI Failure
+**CI:** Check failed job, error logs, dependencies, tests and runtime.
 
-Check:
+**Gitleaks:** Identify the detected secret and revoke it if genuine.
 
-- Failed workflow job
-- Error message
-- Dependency installation
-- Test output
-- Runtime version
-- Recent source changes
+**Trivy:** Check vulnerability, severity, affected package/image and available fix.
 
-### Gitleaks Failure
+**Checkov:** Check failed control, affected Terraform resource and remediation.
 
-Check:
+**Terraform:** Check version, formatting, initialization, validation, providers and module inputs.
 
-- Identified file
-- Secret type
-- Whether the detected value is actually a secret
-- Whether the secret must be revoked
+Security findings must not be suppressed without following the exception process.
 
-A real exposed credential should be treated as a security issue.
-
-### Trivy Failure
-
-Check:
-
-- Vulnerability identifier
-- Severity
-- Affected package
-- Available fixed version
-- Base image version
-
-### Checkov Failure
-
-Check:
-
-- Failed check ID
-- Affected Terraform resource
-- Security recommendation
-- Whether remediation is possible
-
-Do not suppress security findings without following the exception process.
-
-### Terraform Failure
-
-Check:
-
-- Terraform version
-- Formatting
-- Initialization
-- Validation output
-- Provider version
-- Module inputs
-- Variable values
-
-## Escalation Flow
-
-The standard escalation flow is:
+## Escalation
 
 ```text
 Developer
-    ↓
+   ↓
 Application Team
-    ↓
+   ↓
 Platform Engineering
-    ↓
-Security / Cloud / Network / Database
-    ↓
-Specialist Team
+   ↓
+Security / Cloud / Specialist Team
+````
 
+Support requests should include:
 
-Escalation should include relevant evidence rather than only a description of the problem.
-
-## Support Request Information
-
-A support request should include:
-
-* Repository
-* Application
+* Repository/application
 * Environment
-* Workflow name
-* Failed job
+* Failed workflow/job
 * Error message
 * Timestamp
 * Recent changes
 * Relevant logs
 * Impact
-* Troubleshooting already performed
+* Troubleshooting performed
 
 ## Incident Management
 
-Production-impacting issues should follow the organization's incident-management process.
+Production-impacting issues must follow the organization's incident process.
 
-The incident should identify:
+Record:
 
 * Impact
-* Affected application
-* Environment
-* Start time
-* Current status
-* Actions taken
+* Affected application/environment
+* Status
+* Actions
 * Owner
 * Escalation
 * Resolution
@@ -243,111 +89,32 @@ The incident should identify:
 
 ## Platform Incidents
 
-Platform Engineering should treat widespread failures differently from application-specific failures.
+Platform Engineering should investigate failures affecting multiple repositories, such as:
 
-Examples of platform incidents:
+* Reusable workflow failures
+* Terraform module regressions
+* Repository template defects
+* Platform security workflow failures
+* Shared infrastructure failures
 
-* Reusable workflow failure affecting multiple repositories
-* Terraform module regression
-* Repository template defect
-* Platform security workflow failure
-* Shared infrastructure failure
+## Continuous Improvement
 
-Platform incidents should be investigated for broader impact.
+Recurring issues should be converted into:
 
-## Change Management
+```text
+Incident → Root Cause → Resolution → Documentation → Automation
+```
 
-Platform changes should follow appropriate review and validation.
+Track:
 
-Examples include:
-
-* Terraform module changes
-* Reusable workflow changes
-* Security control changes
-* Repository template changes
-* Governance changes
-
-Changes should be tested before broad adoption.
-
-## Knowledge Management
-
-Recurring problems should be converted into reusable documentation.
-
-Examples:
-
-
-Incident
-   ↓
-Root Cause
-   ↓
-Resolution
-   ↓
-Documentation
-   ↓
-Automation / Platform Improvement
-
-
-## Service Improvement
-
-Platform Engineering should periodically review:
-
-* Common support requests
-* CI failures
-* Security findings
-* Onboarding issues
-* Developer feedback
-* Platform reliability
-* Documentation gaps
-
-Recurring issues should be considered for automation or platform improvements.
-
-## Developer Experience Metrics
-
-Useful metrics include:
-
-* Repository onboarding time
+* Onboarding time
 * CI success rate
-* Average CI duration
-* Security finding remediation time
-* Terraform validation failure rate
-* Number of support requests
-* Platform incident count
+* Security remediation time
+* Terraform failure rate
+* Support requests
+* Platform incidents
 * Self-service adoption
-* Developer satisfaction
-
-## Responsibilities
-
-### Application Teams
-
-* Use self-service capabilities.
-* Follow platform standards.
-* Troubleshoot using documentation.
-* Provide complete support information.
-* Escalate when required.
-
-### Platform Engineering
-
-* Maintain platform capabilities.
-* Provide reusable solutions.
-* Maintain documentation.
-* Resolve platform defects.
-* Monitor developer experience.
-
-### Security Team
-
-* Maintain security standards.
-* Review security exceptions.
-* Support security incidents.
-* Provide security guidance.
 
 ## Definition of Done
 
-The support model is complete when:
-
-* Ownership is clearly defined.
-* Support categories are documented.
-* Troubleshooting guidance exists.
-* Escalation paths are defined.
-* Incident information requirements are documented.
-* Platform improvement feedback is captured.
-* Developer experience metrics are defined.
+The support model is complete when ownership, troubleshooting, escalation, incident handling and improvement processes are documented.
