@@ -1,85 +1,99 @@
-# group2-advanced
-
-## AI-Driven Cloud & DevSecOps Capstone
-
-**Reusable Platform Engineering Solution for Acme Retail Ltd.**
+# Acme Retail — Internal Developer Platform
 
 ## Overview
 
-This project implements a reusable Internal Developer Platform (IDP) to standardize:
+This capstone implements a reusable Internal Developer Platform (IDP) for Acme Retail.
 
-- CI/CD
-- Terraform infrastructure
-- Security
+The platform standardizes:
+
 - Repository structure
+- CI/CD
+- Security
+- Terraform infrastructure
 - Governance
 - Developer experience
 
-It addresses duplicate pipelines, duplicate infrastructure, inconsistent security and longer onboarding across application teams. :contentReference[oaicite:2]{index=2}
-
-## Platform Capabilities
+## Platform Architecture
 
 ```text
+Application Teams
+       ↓
 Repository Template
-        ↓
+       ↓
 Reusable GitHub Actions
-        ↓
+       ↓
 Security Controls
-        ↓
+       ↓
 Reusable Terraform Modules
-        ↓
-Governance
-        ↓
-Developer Experience
+       ↓
+AWS Infrastructure
 ````
-
-### Reusable Terraform Modules
-
-* Network
-* IAM
-* Container
-* Observability
-
-### Reusable CI/CD
-
-* Application CI
-* Gitleaks
-* Trivy
-* Terraform validation
-* Checkov
-
-### Governance
-
-* Branch protection
-* PR reviews
-* CODEOWNERS
-* Security gates
-* Terraform governance
-* Exception management
-
-### Developer Experience
-
-* Standard repository template
-* Self-service platform capabilities
-* Standard onboarding
-* Documentation
-* Troubleshooting guidance
 
 ## Repository Structure
 
 ```text
-group2-advanced/
-├── .github/workflows/
-├── ai-specifications/
-├── architecture/
+.
+├── app/
 ├── infrastructure/
-├── repo-template/
+├── .github/workflows/
+├── docs/
+├── architecture/
+├── ai-specifications/
+├── engineering-decisions/
 ├── governance/
 ├── developer-experience/
-├── engineering-decisions/
-├── docs/
-└── presentation/
+├── repo-template/
+└── tests/
 ```
+
+## Platform Capabilities
+
+### CI/CD
+
+Reusable GitHub Actions provide:
+
+* Build and test
+* Security scanning
+* Terraform validation
+* Deployment workflows
+
+### Security
+
+* Gitleaks — secret scanning
+* Trivy — vulnerability scanning
+* Checkov — Terraform security
+
+### Terraform
+
+Reusable AWS modules:
+
+```text
+network
+iam
+container
+observability
+```
+
+### Governance
+
+Includes:
+
+* Branch protection
+* Pull Request standards
+* CODEOWNERS
+* Security gates
+* Exception management
+* Production approval
+
+### Developer Experience
+
+Provides:
+
+* Standard repository template
+* Developer onboarding
+* Self-service capabilities
+* Troubleshooting
+* Support model
 
 ## AI Engineering Specifications
 
@@ -93,80 +107,43 @@ ai-specifications/
 └── developer-experience-spec.md
 ```
 
-These specifications define the platform requirements, architecture, security, governance, validation and Definition of Done.
-
 ## Validation
 
-GitHub Actions validates:
+The platform has automated validation for:
 
-* Application CI
-* Gitleaks
-* Trivy
-* Terraform
-* Checkov
+* Terraform modules
+* Terraform consumers
+* CI/CD workflows
+* Security scanning
 * Repository template
-* Orders API consumer
-* Payments API consumer
+* Application tests
+* Docker build
 
-Current validation includes successful platform CI, template validation and Terraform consumer validation. 
+See:
 
-## Security
-
-Security is integrated by default using:
-
-* Gitleaks
-* Trivy
-* Checkov
-* Least-privilege IAM
-* Encryption
-* Restricted network access
-* Protected production changes
-
-## Technology Stack
-
-| Area           | Technology                 |
-| -------------- | -------------------------- |
-| Source Control | GitHub                     |
-| CI/CD          | GitHub Actions             |
-| IaC            | Terraform                  |
-| Cloud          | AWS                        |
-| Container      | Docker / Amazon ECR        |
-| Security       | Gitleaks / Trivy / Checkov |
-| Application    | Python                     |
-| Documentation  | Markdown                   |
+`docs/validation-evidence.md`
 
 ## Application Consumers
 
-The reusable platform capabilities are validated by:
+The reusable platform capabilities are demonstrated with:
 
 * Orders API
 * Payments API
 
-Both consume the same Terraform modules and platform CI/CD capabilities. 
+Both consume the same reusable Terraform modules.
 
-## Architecture & Decisions
+## Documentation
 
-Architecture:
+| Area                 | Location                      |
+| -------------------- | ----------------------------- |
+| Architecture         | `architecture/`               |
+| AI Specifications    | `ai-specifications/`          |
+| Governance           | `governance/`                 |
+| Developer Experience | `developer-experience/`       |
+| ADRs                 | `engineering-decisions/`      |
+| Validation           | `docs/validation-evidence.md` |
+| Repository Template  | `repo-template/`              |
 
-`architecture/`
+## Status
 
-Engineering decisions:
-
-`engineering-decisions/`
-
-ADRs cover platform architecture, Terraform modules, reusable GitHub Actions, security-by-default and repository templates.
-
-## Definition of Done
-
-* AI Engineering Specifications completed
-* Platform architecture documented
-* Reusable Terraform modules implemented
-* Reusable GitHub Actions implemented
-* Security integrated
-* Repository template implemented
-* Governance documented
-* Developer experience documented
-* Orders and Payments consumers validated
-* GitHub Actions validation passing
-* ADRs completed
-* Final presentation prepared
+**Capstone implementation validated with documented environment-level configuration requirements.**
