@@ -1,10 +1,10 @@
-# Default repository owners
-* @group2-advanced
+# Default repository owner
+* @Tamilarasan-T
 
 # Platform and infrastructure changes
-/infrastructure/ @group2-advanced
-/.github/ @group2-advanced
-/ai-specifications/ @group2-advanced
-/governance/ @group2-advanced
-/architecture/ @group2-advanced
-/engineering-decisions/ @group2-advanced
+/infrastructure/ @Tamilarasan-T
+/.github/ @Tamilarasan-T
+/ai-specifications/ @Tamilarasan-T
+/governance/ @Tamilarasan-T
+/architecture/ @Tamilarasan-T
+/engineering-decisions/ @Tamilarasan-T
