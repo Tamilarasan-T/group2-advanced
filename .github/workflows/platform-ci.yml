@@ -26,7 +26,10 @@ jobs:
     uses: ./.github/workflows/reusable-security.yml
     with:
       scan-directory: "."
-      run-trivy-image: false
+      run-trivy-image: true
+      image-name: acme-retail-template:${{ github.sha }}
+      image-context: repo-template
+      image-dockerfile: repo-template/Dockerfile
 
   terraform:
     name: Reusable Terraform
