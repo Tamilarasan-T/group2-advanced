@@ -7,7 +7,7 @@ Reusable AWS IAM role module for application workloads following least-privilege
 - EC2
 - ECS tasks
 - EKS workloads
-- Optional EC2 instance profile
+- Optional EC2 instance profile.
 
 ## Usage
 
