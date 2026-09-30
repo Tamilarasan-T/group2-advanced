@@ -68,5 +68,5 @@ jobs:
               exit 1
             fi
           else
-            echo "No tests directory found. Skipping tests."
+            echo "No tests directory found, Skipping tests."
           fi
