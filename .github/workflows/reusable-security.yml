@@ -10,10 +10,22 @@ on:
         default: "."
 
       image-name:
-        description: "Docker image name to scan"
+        description: "Docker image name to build and scan"
         required: false
         type: string
         default: ""
+
+      image-context:
+        description: "Docker build context; leave empty to scan an existing image"
+        required: false
+        type: string
+        default: ""
+
+      image-dockerfile:
+        description: "Dockerfile path relative to the repository root"
+        required: false
+        type: string
+        default: "Dockerfile"
 
       run-trivy-image:
         description: "Whether to run Trivy image scanning"
@@ -69,6 +81,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
+
+      - name: Build Docker image for scanning
+        if: ${{ inputs.image-context != '' }}
+        run: |
+          docker build \
+            --file "${{ inputs.image-dockerfile }}" \
+            --tag "${{ inputs.image-name }}" \
+            "${{ inputs.image-context }}"
 
       - name: Run Trivy image scan
         uses: aquasecurity/trivy-action@v0.36.0
