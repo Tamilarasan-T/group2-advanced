@@ -68,5 +68,5 @@ resource "aws_iam_instance_profile" "application" {
     {
       Name = "${local.name_prefix}-application-profile"
     }
-  )
+  
 }
